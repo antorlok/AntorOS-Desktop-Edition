@@ -49,7 +49,7 @@
     </div>
 
     <!-- Contenedor del motor de renderizado con posición relativa para forzar el redimensionamiento del Shadow DOM -->
-    <div class="webview-container">
+    <div ref="containerRef" class="webview-container">
       <webview
         ref="webviewRef"
         src="https://google.com"
@@ -63,16 +63,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { ArrowLeft, ArrowRight, RotateCw, Globe as GlobeIcon } from 'lucide-vue-next';
 
 // ── Estado del input de navegación ──
-// inputUrl: refleja exactamente lo que el usuario ve/escribe en la barra.
 const inputUrl = ref('https://google.com');
 const isLoading = ref(false);
 
 // Ref tipada al elemento DOM del webview para acceder a su API nativa de Electron
 const webviewRef = ref<Electron.WebviewTag | null>(null);
+
+// Ref al contenedor para observar cambios de tamaño
+const containerRef = ref<HTMLDivElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
 
 // ── Lógica de Navegación ──
 
@@ -114,6 +117,44 @@ function reload()    { webviewRef.value?.reload(); }
 function selectOnFocus(e: FocusEvent) {
   (e.target as HTMLInputElement).select();
 }
+
+/**
+ * Fuerza al <webview> a recalcular su viewport interno.
+ * Electron no propaga automáticamente cambios de CSS al guest WebContents;
+ * se necesita un "touch" en el estilo para que Chromium re-layout.
+ */
+function forceWebviewResize() {
+  const wv = webviewRef.value;
+  if (!wv) return;
+  const { offsetWidth, offsetHeight } = wv;
+  // Forzar un reflow asignando dimensiones explícitas en px
+  wv.style.width = `${offsetWidth}px`;
+  wv.style.height = `${offsetHeight}px`;
+  // Restaurar al 100% en el siguiente frame para mantener la responsividad
+  requestAnimationFrame(() => {
+    wv.style.width = '100%';
+    wv.style.height = '100%';
+  });
+}
+
+onMounted(async () => {
+  await nextTick();
+
+  // Observar cambios de tamaño del contenedor para sincronizar el viewport del webview
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      forceWebviewResize();
+    });
+    resizeObserver.observe(containerRef.value);
+  }
+
+  // Trigger inicial para forzar dimensiones después del primer render
+  setTimeout(() => forceWebviewResize(), 200);
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+});
 </script>
 
 <style scoped>
@@ -242,19 +283,22 @@ function selectOnFocus(e: FocusEvent) {
   right: 0;
   bottom: 0;
   overflow: hidden;
-  background: #ffffff;
 }
 
-/* ── Motor Web Chromium ── */
+/*
+ * Motor Web Chromium — el <webview> de Electron tiene un Shadow DOM
+ * interno que aplica sus propios estilos de dimensión. Se necesita
+ * !important para forzar al guest renderer a respetar el layout
+ * del contenedor padre en lugar de colapsar al default de 150px.
+ */
 .web-engine {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: #ffffff;
-  display: block;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  background-color: #fff;
+  display: inline-flex !important;
 }
 </style>
 
