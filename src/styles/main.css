@@ -1,0 +1,23 @@
+@import './variables.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: #ffffff;
+  font-family: var(--font-family-base);
+  
+  /* El OS Simulator opera a pantalla completa y contenida */
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Ocultar las barras de scroll nativas en todo el entorno gráfico */
+::-webkit-scrollbar {
+  display: none;
+}
