@@ -76,7 +76,7 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     title: 'Cámara Cyber',
     icon: Camera,
     defaultWidth: 640,
-    defaultHeight: 480,
+    defaultHeight: 560,
   },
   {
     id: 'network',

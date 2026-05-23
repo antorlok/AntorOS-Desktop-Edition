@@ -16,6 +16,29 @@ export const useOSStore = defineStore('os', () => {
   // Controla si el menú general de aplicaciones (App Grid) está visible
   const isLauncherOpen = ref(false);
 
+  // ---- Sistema de Archivos Virtual Centralizado ----
+  const fileSystem = ref<Record<string, { name: string; type: 'dir' | 'file'; size?: string; dataUrl?: string }[]>>({
+    Inicio: [
+      { name: 'Descargas', type: 'dir' },
+      { name: 'Documentos', type: 'dir' },
+      { name: 'Imágenes', type: 'dir' }
+    ],
+    Descargas: [
+      { name: 'antor-os-v2.iso', type: 'file', size: '2.4 GB' },
+      { name: 'config.json', type: 'file', size: '1.2 KB' }
+    ],
+    Documentos: [
+      { name: 'proyecto-sistemas.pdf', type: 'file', size: '3.6 MB' },
+      { name: 'bitacora-desarrollo.txt', type: 'file', size: '14 KB' },
+      { name: 'antorui-arquitectura.docx', type: 'file', size: '512 KB' }
+    ],
+    Imágenes: [
+      { name: 'neon-cityscape.png', type: 'file', size: '8.2 MB' },
+      { name: 'cyberpunk-avatar.jpg', type: 'file', size: '1.4 MB' },
+      { name: 'desktop-mockup.png', type: 'file', size: '4.7 MB' }
+    ]
+  });
+
   // ---- Getters ----
   const activeWindow = computed(() =>
     windows.value.find((w) => w.id === activeWindowId.value) ?? null,
@@ -150,6 +173,13 @@ export const useOSStore = defineStore('os', () => {
     isLauncherOpen.value = !isLauncherOpen.value;
   }
 
+  /** Inyecta un archivo nuevo dentro de un directorio específico */
+  function addFileToFolder(folderName: string, file: { name: string; type: 'dir' | 'file'; size?: string; dataUrl?: string }): void {
+    if (fileSystem.value[folderName]) {
+      fileSystem.value[folderName].push(file);
+    }
+  }
+
   return {
     // State
     windows,
@@ -158,6 +188,7 @@ export const useOSStore = defineStore('os', () => {
     stats,
     isAuthenticated,
     isLauncherOpen,
+    fileSystem,
     // Getters
     activeWindow,
     visibleWindows,
@@ -171,5 +202,6 @@ export const useOSStore = defineStore('os', () => {
     updateStats,
     unlock,
     toggleLauncher,
+    addFileToFolder,
   };
 });
