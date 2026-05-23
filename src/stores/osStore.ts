@@ -33,9 +33,9 @@ export const useOSStore = defineStore('os', () => {
       { name: 'antorui-arquitectura.docx', type: 'file', size: '512 KB' }
     ],
     Imágenes: [
-      { name: 'neon-cityscape.png', type: 'file', size: '8.2 MB' },
-      { name: 'cyberpunk-avatar.jpg', type: 'file', size: '1.4 MB' },
-      { name: 'desktop-mockup.png', type: 'file', size: '4.7 MB' }
+      { name: 'neon-cityscape.png', type: 'file', size: '8.2 MB', dataUrl: 'https://images.unsplash.com/photo-1601042879364-f3947d3f9c16?q=80&w=1200' },
+      { name: 'cyberpunk-avatar.jpg', type: 'file', size: '1.4 MB', dataUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200' },
+      { name: 'desktop-mockup.png', type: 'file', size: '4.7 MB', dataUrl: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1200' }
     ]
   });
 

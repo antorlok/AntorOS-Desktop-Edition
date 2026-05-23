@@ -29,6 +29,36 @@
           <span class="crumb-link active-crumb">{{ currentPath }}</span>
         </template>
       </div>
+
+      <!-- Control de Acciones y Operaciones de Archivos -->
+      <div class="action-controls">
+        <button class="action-btn" @click="createNewFolder" title="Nueva Carpeta">
+          <FolderPlusIcon class="action-icon" />
+          <span>Nueva carpeta</span>
+        </button>
+        <button class="action-btn" @click="createNewFile" title="Nuevo Archivo de Texto">
+          <FilePlusIcon class="action-icon" />
+          <span>Nuevo archivo</span>
+        </button>
+        <button
+          class="action-btn btn-danger"
+          :disabled="!selectedItemName"
+          @click="deleteSelectedItem"
+          title="Eliminar elemento"
+        >
+          <TrashIcon class="action-icon" />
+          <span>Eliminar</span>
+        </button>
+        <button
+          class="action-btn btn-accent"
+          :disabled="!selectedItemName"
+          @click="showMoveModal = true"
+          title="Mover elemento"
+        >
+          <MoveIcon class="action-icon" />
+          <span>Mover</span>
+        </button>
+      </div>
     </header>
 
     <div class="explorer-body">
@@ -180,6 +210,39 @@
         </div>
       </div>
     </Transition>
+
+    <!-- ── MODAL OVERLAY: MOVER ARCHIVO ── -->
+    <Transition name="preview-fade">
+      <div v-if="showMoveModal" class="preview-modal-overlay" @click.self="showMoveModal = false">
+        <div class="move-modal-card">
+          <header class="preview-header">
+            <div class="preview-title-meta">
+              <MoveIcon class="preview-header-icon" />
+              <div>
+                <h3 class="preview-filename">Mover elemento</h3>
+                <span class="preview-filesize">Destino para: {{ selectedItemName }}</span>
+              </div>
+            </div>
+            <button class="preview-close-btn" @click="showMoveModal = false">×</button>
+          </header>
+          <main class="move-modal-body">
+            <p class="move-instruction">Elige la carpeta de destino para <strong>{{ selectedItemName }}</strong>:</p>
+            <div class="move-destinations-list">
+              <button
+                v-for="dest in destinations"
+                :key="dest.id"
+                class="move-dest-row"
+                :disabled="dest.id === currentPath"
+                @click="moveSelectedItem(dest.id)"
+              >
+                <component :is="dest.icon" class="move-dest-icon" />
+                <span>{{ dest.label }}</span>
+              </button>
+            </div>
+          </main>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -195,7 +258,11 @@ import {
   Home as HomeIcon,
   Download as DownloadIcon,
   BookOpen as BookOpenIcon,
-  Video as VideoIcon
+  Video as VideoIcon,
+  FolderPlus as FolderPlusIcon,
+  FilePlus as FilePlusIcon,
+  Trash as TrashIcon,
+  Move as MoveIcon
 } from 'lucide-vue-next';
 
 const osStore = useOSStore();
@@ -203,6 +270,9 @@ const osStore = useOSStore();
 // Ruta interna actual
 const currentPath = ref('Inicio');
 const selectedItemName = ref<string | null>(null);
+
+// Modal para mover archivos
+const showMoveModal = ref(false);
 
 // Archivo actualmente en vista previa
 const activePreviewFile = ref<FileItem | null>(null);
@@ -315,6 +385,95 @@ function handleItemAction(item: FileItem) {
     activePreviewFile.value = item;
   }
 }
+
+// ---- OPERACIONES DE ARCHIVOS ----
+
+// Crea un nuevo directorio virtual en la ruta actual
+function createNewFolder() {
+  const name = prompt('Ingresa el nombre de la nueva carpeta:');
+  if (!name || !name.trim()) return;
+  const cleanName = name.trim();
+
+  const folderContent = osStore.fileSystem[currentPath.value] || [];
+  if (folderContent.some(item => item.name.toLowerCase() === cleanName.toLowerCase())) {
+    alert('Ya existe un elemento con ese nombre.');
+    return;
+  }
+
+  osStore.addFileToFolder(currentPath.value, {
+    name: cleanName,
+    type: 'dir'
+  });
+
+  // Asegura la inicialización de la nueva carpeta en el store para soportar navegación
+  if (!osStore.fileSystem[cleanName]) {
+    osStore.fileSystem[cleanName] = [];
+  }
+}
+
+// Crea un nuevo archivo de texto en la ruta actual
+function createNewFile() {
+  const name = prompt('Ingresa el nombre del nuevo archivo de texto:');
+  if (!name || !name.trim()) return;
+  let cleanName = name.trim();
+  if (!cleanName.endsWith('.txt')) cleanName += '.txt';
+
+  const folderContent = osStore.fileSystem[currentPath.value] || [];
+  if (folderContent.some(item => item.name.toLowerCase() === cleanName.toLowerCase())) {
+    alert('Ya existe un archivo con ese nombre.');
+    return;
+  }
+
+  osStore.addFileToFolder(currentPath.value, {
+    name: cleanName,
+    type: 'file',
+    size: '1 KB',
+    dataUrl: 'data:text/plain;base64,Qmlldm5lbmlkbyBhIEFudG9yT1Mh'
+  });
+}
+
+// Elimina el archivo o carpeta seleccionada
+function deleteSelectedItem() {
+  if (!selectedItemName.value) return;
+  const name = selectedItemName.value;
+  if (!confirm(`¿Estás seguro de que deseas eliminar "${name}"?`)) return;
+
+  const folderContent = osStore.fileSystem[currentPath.value] || [];
+  osStore.fileSystem[currentPath.value] = folderContent.filter(item => item.name !== name);
+
+  selectedItemName.value = null;
+}
+
+// Mueve el archivo seleccionado a otra carpeta principal
+function moveSelectedItem(targetFolder: string) {
+  if (!selectedItemName.value) return;
+  const name = selectedItemName.value;
+
+  if (targetFolder === currentPath.value) {
+    alert('El elemento ya se encuentra en esa carpeta.');
+    return;
+  }
+
+  const sourceContent = osStore.fileSystem[currentPath.value] || [];
+  const itemToMove = sourceContent.find(item => item.name === name);
+
+  if (!itemToMove) return;
+
+  const destContent = osStore.fileSystem[targetFolder] || [];
+  if (destContent.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+    alert(`Ya existe un elemento llamado "${name}" en la carpeta "${targetFolder}".`);
+    return;
+  }
+
+  // Eliminar de origen
+  osStore.fileSystem[currentPath.value] = sourceContent.filter(item => item.name !== name);
+
+  // Añadir a destino
+  osStore.addFileToFolder(targetFolder, itemToMove);
+
+  selectedItemName.value = null;
+  showMoveModal.value = false;
+}
 </script>
 
 <style scoped>
@@ -341,6 +500,120 @@ function handleItemAction(item: FileItem) {
   padding: 0 16px;
   background: rgba(2, 6, 23, 0.5);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Controles de Acción Superior */
+.action-controls {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #cdd6f4;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.3);
+  color: #22d3ee;
+}
+
+.action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #ef4444 !important;
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: rgba(229, 200, 144, 0.1) !important;
+  border-color: rgba(229, 200, 144, 0.3) !important;
+  color: #e5c890 !important;
+}
+
+.action-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Modal de Mover Archivos */
+.move-modal-card {
+  width: 100%;
+  max-width: 360px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(229, 200, 144, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(229, 200, 144, 0.05);
+  overflow: hidden;
+}
+
+.move-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.move-instruction {
+  font-size: 0.82rem;
+  color: #a6adc8;
+  line-height: 1.4;
+}
+
+.move-destinations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.move-dest-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  color: #cdd6f4;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.move-dest-row:hover:not(:disabled) {
+  background: rgba(229, 200, 144, 0.1);
+  border-color: #e5c890;
+  color: #e5c890;
+}
+
+.move-dest-row:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.move-dest-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .nav-controls {

@@ -1,5 +1,14 @@
 <template>
-  <div class="desktop-environment">
+  <div
+    class="desktop-environment"
+    :style="{ backgroundImage: `url(${configStore.wallpaper})` }"
+  >
+    <!-- Capa de difuminado reactiva con transiciones ultra suaves -->
+    <div
+      class="desktop-blur-layer"
+      :class="{ 'blur-active': configStore.blurEnabled }"
+    ></div>
+
     <!-- Shell Superior de Control (Reloj + Actividades + Telemetría) -->
     <Shell />
 
@@ -22,11 +31,13 @@
 <script setup lang="ts">
 import { defineAsyncComponent, type Component } from 'vue';
 import { useOSStore } from '@/stores/osStore';
+import { useConfigStore } from '@/stores/configStore';
 import Shell from '@/components/core/Shell.vue';
 import WindowFrame from '@/components/core/WindowFrame.vue';
 import Taskbar from '@/components/core/Taskbar.vue';
 
 const osStore = useOSStore();
+const configStore = useConfigStore();
 
 // Registro local asíncrono para Lazy Loading de las apps del SO
 const appRegistry: Record<string, Component> = {
@@ -56,9 +67,25 @@ function getAppComponent(appName: string): Component | string {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  
-  /* Fondo base del sistema con degradado Gamer-Neon */
-  background: radial-gradient(circle at 50% 50%, var(--surface-base) 0%, var(--bg-dark) 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--bg-dark);
+}
+
+.desktop-blur-layer {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(0px) brightness(1);
+  pointer-events: none;
+  z-index: 1;
+  transition: backdrop-filter 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.desktop-blur-layer.blur-active {
+  backdrop-filter: blur(16px) brightness(0.65);
+  background-color: rgba(17, 17, 27, 0.35);
 }
 
 /* Área de trabajo por debajo del Shell superior (32px) */
@@ -69,6 +96,7 @@ function getAppComponent(appName: string): Component | string {
   right: 0;
   bottom: 0;
   overflow: hidden;
+  z-index: 2;
 }
 </style>
 
