@@ -13,6 +13,8 @@ export const useOSStore = defineStore('os', () => {
   const stats = ref<HardwareStats>({ cpu_usage: 0, ram_usage: 0 });
   // Controla si el usuario superó la pantalla de bloqueo
   const isAuthenticated = ref(false);
+  // Controla si el menú general de aplicaciones (App Grid) está visible
+  const isLauncherOpen = ref(false);
 
   // ---- Getters ----
   const activeWindow = computed(() =>
@@ -30,18 +32,35 @@ export const useOSStore = defineStore('os', () => {
    * Posiciona en cascada según el número de ventanas abiertas.
    */
   function openWindow(
-    appName: string,
-    title: string,
-    defaultWidth: number = 800,
-    defaultHeight: number = 500,
+    appNameOrApp: string | { name: string; title: string; defaultWidth?: number; defaultHeight?: number },
+    title?: string,
+    defaultWidth?: number,
+    defaultHeight?: number,
   ): string {
+    let appName: string;
+    let windowTitle: string;
+    let width = 800;
+    let height = 500;
+
+    if (typeof appNameOrApp === 'object' && appNameOrApp !== null) {
+      appName = appNameOrApp.name;
+      windowTitle = appNameOrApp.title;
+      width = appNameOrApp.defaultWidth ?? 800;
+      height = appNameOrApp.defaultHeight ?? 500;
+    } else {
+      appName = appNameOrApp;
+      windowTitle = title ?? '';
+      width = defaultWidth ?? 800;
+      height = defaultHeight ?? 500;
+    }
+
     const id = crypto.randomUUID();
     const cascade = windows.value.length;
 
     const process: WindowProcess = {
       id,
       appName,
-      title,
+      title: windowTitle,
       zIndex: baseZIndex.value++,
       isMinimized: false,
       isMaximized: false,
@@ -50,8 +69,8 @@ export const useOSStore = defineStore('os', () => {
         y: 60 + cascade * CASCADE_OFFSET,
       },
       dimensions: {
-        width: defaultWidth,
-        height: defaultHeight,
+        width,
+        height,
       },
     };
 
@@ -126,6 +145,11 @@ export const useOSStore = defineStore('os', () => {
     isAuthenticated.value = true;
   }
 
+  /** Alterna la visibilidad del launcher de aplicaciones */
+  function toggleLauncher(): void {
+    isLauncherOpen.value = !isLauncherOpen.value;
+  }
+
   return {
     // State
     windows,
@@ -133,6 +157,7 @@ export const useOSStore = defineStore('os', () => {
     baseZIndex,
     stats,
     isAuthenticated,
+    isLauncherOpen,
     // Getters
     activeWindow,
     visibleWindows,
@@ -145,5 +170,6 @@ export const useOSStore = defineStore('os', () => {
     toggleMaximize,
     updateStats,
     unlock,
+    toggleLauncher,
   };
 });

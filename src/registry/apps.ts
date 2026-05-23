@@ -1,4 +1,15 @@
-import { Globe, Terminal, Settings, type LucideIcon } from 'lucide-vue-next';
+import {
+  Globe,
+  TerminalSquare,
+  Settings,
+  Activity,
+  FolderOpen,
+  FileText,
+  Camera,
+  Wifi,
+  BookOpen,
+  type LucideIcon,
+} from 'lucide-vue-next';
 
 export interface AppRegistryEntry {
   id: string;
@@ -9,7 +20,7 @@ export interface AppRegistryEntry {
   defaultHeight?: number;
 }
 
-// Catálogo centralizado del sistema operativo
+// Catálogo centralizado de aplicaciones del sistema operativo AntorUI
 export const SYSTEM_APPS: AppRegistryEntry[] = [
   {
     id: 'browser',
@@ -23,7 +34,7 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     id: 'terminal',
     name: 'TerminalApp',
     title: 'Terminal de Comando',
-    icon: Terminal,
+    icon: TerminalSquare,
     defaultWidth: 700,
     defaultHeight: 450,
   },
@@ -34,5 +45,53 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Settings,
     defaultWidth: 800,
     defaultHeight: 500,
+  },
+  {
+    id: 'monitor',
+    name: 'MonitorApp',
+    title: 'Monitor de Sistema',
+    icon: Activity,
+    defaultWidth: 850,
+    defaultHeight: 550,
+  },
+  {
+    id: 'files',
+    name: 'FilesApp',
+    title: 'Gestor de Archivos',
+    icon: FolderOpen,
+    defaultWidth: 900,
+    defaultHeight: 550,
+  },
+  {
+    id: 'notes',
+    name: 'NotesApp',
+    title: 'Editor de Notas',
+    icon: FileText,
+    defaultWidth: 600,
+    defaultHeight: 500,
+  },
+  {
+    id: 'camera',
+    name: 'CameraApp',
+    title: 'Cámara Cyber',
+    icon: Camera,
+    defaultWidth: 640,
+    defaultHeight: 480,
+  },
+  {
+    id: 'network',
+    name: 'NetworkApp',
+    title: 'Centro de Redes',
+    icon: Wifi,
+    defaultWidth: 750,
+    defaultHeight: 480,
+  },
+  {
+    id: 'office',
+    name: 'OfficeApp',
+    title: 'Suite de Oficina',
+    icon: BookOpen,
+    defaultWidth: 950,
+    defaultHeight: 600,
   },
 ];

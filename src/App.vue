@@ -27,17 +27,6 @@ watch(
   },
   { deep: true },
 );
-
-// Abrir ventanas de bienvenida solo cuando el usuario se autentica por primera vez
-watch(
-  () => osStore.isAuthenticated,
-  (authenticated) => {
-    if (!authenticated) return;
-    osStore.openWindow('BrowserApp', 'Navegador Web', 1000, 600);
-    osStore.openWindow('TerminalApp', 'Terminal de Comando', 700, 450);
-  },
-  { once: true },
-);
 </script>
 
 <style scoped>
