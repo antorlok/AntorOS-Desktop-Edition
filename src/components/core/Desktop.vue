@@ -33,6 +33,12 @@ const appRegistry: Record<string, Component> = {
   BrowserApp: defineAsyncComponent(() => import('@/components/apps/BrowserApp.vue')),
   TerminalApp: defineAsyncComponent(() => import('@/components/apps/TerminalApp.vue')),
   SettingsApp: defineAsyncComponent(() => import('@/components/apps/SettingsApp.vue')),
+  MonitorApp: defineAsyncComponent(() => import('@/components/apps/SystemMonitor.vue')),
+  FilesApp: defineAsyncComponent(() => import('@/components/apps/FileManager.vue')),
+  NotesApp: defineAsyncComponent(() => import('@/components/apps/NotesApp.vue')),
+  CameraApp: defineAsyncComponent(() => import('@/components/apps/CameraApp.vue')),
+  NetworkApp: defineAsyncComponent(() => import('@/components/apps/NetworkApp.vue')),
+  OfficeApp: defineAsyncComponent(() => import('@/components/apps/OfficeApp.vue')),
 };
 
 /**
