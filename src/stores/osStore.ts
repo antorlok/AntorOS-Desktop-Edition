@@ -15,7 +15,8 @@ export const useOSStore = defineStore('os', () => {
     ram_usage: 0,
     batteryLevel: 85,
     batteryCharging: false,
-    networkOnline: true
+    networkOnline: true,
+    cpu_temp: 42
   });
   // Controla si el sistema operativo está experimentando el reinicio del Kernel
   const isBooting = ref(false);

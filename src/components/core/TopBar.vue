@@ -22,6 +22,42 @@
 
     <!-- Derecha: Área de Estado y Menú de Energía -->
     <div class="top-bar-right">
+      <!-- Indicador de CPU en TopBar -->
+      <div v-if="configStore.showTopbarCpu" class="stat-chip cpu-chip" title="Carga de CPU">
+        <CpuIcon class="stat-chip-icon" />
+        <span class="stat-value">{{ Math.round(osStore.stats.cpu_usage) }}%</span>
+        <div class="stat-progress-bg">
+          <div
+            class="stat-progress-fill cpu-fill"
+            :style="{ width: `${osStore.stats.cpu_usage}%` }"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Indicador de RAM en TopBar -->
+      <div v-if="configStore.showTopbarRam" class="stat-chip ram-chip" title="Uso de RAM">
+        <LayersIcon class="stat-chip-icon" />
+        <span class="stat-value">{{ Math.round(osStore.stats.ram_usage) }}%</span>
+        <div class="stat-progress-bg">
+          <div
+            class="stat-progress-fill ram-fill"
+            :style="{ width: `${osStore.stats.ram_usage}%` }"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Indicador de Temperatura en TopBar -->
+      <div v-if="configStore.showTopbarTemp" class="stat-chip temp-chip" title="Temperatura de CPU">
+        <ThermometerIcon class="stat-chip-icon" />
+        <span class="stat-value">{{ Math.round(osStore.stats.cpu_temp ?? 42) }}°C</span>
+        <div class="stat-progress-bg">
+          <div
+            class="stat-progress-fill temp-fill"
+            :style="{ width: `${Math.min(100, Math.round(osStore.stats.cpu_temp ?? 42))}%` }"
+          ></div>
+        </div>
+      </div>
+
       <div
         class="status-area-trigger"
         :class="{ 'status-trigger-active': showPowerMenu }"
@@ -56,6 +92,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useOSStore } from '@/stores/osStore';
+import { useConfigStore } from '@/stores/configStore';
 import PowerMenu from '@/components/core/PowerMenu.vue';
 import {
   LayoutGrid as LayoutGridIcon,
@@ -66,10 +103,14 @@ import {
   BatteryFull as BatteryFullIcon,
   BatteryMedium as BatteryMediumIcon,
   BatteryLow as BatteryLowIcon,
-  Power as PowerIcon
+  Power as PowerIcon,
+  Cpu as CpuIcon,
+  Layers as LayersIcon,
+  Thermometer as ThermometerIcon
 } from 'lucide-vue-next';
 
 const osStore = useOSStore();
+const configStore = useConfigStore();
 
 const showPowerMenu = ref(false);
 
@@ -128,6 +169,7 @@ onUnmounted(() => {
 .top-bar-left, .top-bar-right {
   display: flex;
   align-items: center;
+  gap: 8px;
   position: relative;
 }
 
@@ -173,6 +215,18 @@ onUnmounted(() => {
 
 .activities-btn:hover .activities-icon {
   transform: rotate(15deg);
+}
+
+/* Reloj Centrado de forma Absoluta en la Barra Superior */
+.top-bar-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* Evitar interferencias con la barra superior interactiva */
 }
 
 /* Reloj Centrado */
@@ -260,5 +314,84 @@ onUnmounted(() => {
 @keyframes lowBatteryBlink {
   from { opacity: 0.4; }
   to { opacity: 1; filter: drop-shadow(0 0 4px #ef4444); }
+}
+
+/* Chips de Telemetría en la Barra Superior */
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  height: 22px;
+  transition: all 0.2s ease;
+}
+
+.stat-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--neon-cyan);
+}
+
+.stat-chip-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.stat-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--text-secondary);
+  width: 32px;
+  text-align: right;
+}
+
+/* Micro-barras de progreso */
+.stat-progress-bg {
+  width: 40px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stat-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cpu-fill {
+  background: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+.ram-fill {
+  background: var(--neon-magenta);
+  box-shadow: var(--glow-magenta);
+}
+
+.temp-fill {
+  background: var(--neon-green);
+  box-shadow: var(--glow-green);
+}
+
+.cpu-chip:hover .stat-chip-icon {
+  color: var(--neon-cyan);
+  filter: drop-shadow(var(--glow-cyan));
+}
+
+.ram-chip:hover .stat-chip-icon {
+  color: var(--neon-magenta);
+  filter: drop-shadow(var(--glow-magenta));
+}
+
+.temp-chip:hover .stat-chip-icon {
+  color: var(--neon-green);
+  filter: drop-shadow(var(--glow-green));
 }
 </style>

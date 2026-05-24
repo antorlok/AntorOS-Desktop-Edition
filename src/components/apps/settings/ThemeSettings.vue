@@ -24,6 +24,78 @@
         </div>
       </div>
     </SettingCard>
+
+    <!-- PANEL DE PERSONALIZACIÓN DEL DOCK -->
+    <SettingCard title="Personalización del Dock" :icon="LayoutIcon">
+      <div class="setting-rows-list">
+        <!-- Fila: Mostrar CPU -->
+        <div class="setting-row">
+          <div class="row-info">
+            <span class="row-title">Mostrar CPU</span>
+            <span class="row-sub">Visualizar el porcentaje de uso del procesador en tiempo real.</span>
+          </div>
+          <ToggleSwitch v-model="configStore.showDockCpu" />
+        </div>
+
+        <div class="row-divider"></div>
+
+        <!-- Fila: Mostrar RAM -->
+        <div class="setting-row">
+          <div class="row-info">
+            <span class="row-title">Mostrar RAM</span>
+            <span class="row-sub">Visualizar el porcentaje de uso de la memoria RAM en tiempo real.</span>
+          </div>
+          <ToggleSwitch v-model="configStore.showDockRam" />
+        </div>
+
+        <div class="row-divider"></div>
+
+        <!-- Fila: Mostrar Temperatura -->
+        <div class="setting-row">
+          <div class="row-info">
+            <span class="row-title">Mostrar Temperatura</span>
+            <span class="row-sub">Visualizar la temperatura del procesador en tiempo real.</span>
+          </div>
+          <ToggleSwitch v-model="configStore.showDockTemp" />
+        </div>
+      </div>
+    </SettingCard>
+
+    <!-- PANEL DE PERSONALIZACIÓN DE LA BARRA SUPERIOR -->
+    <SettingCard title="Personalización de la Barra Superior" :icon="PanelTopIcon">
+      <div class="setting-rows-list">
+        <!-- Fila: Mostrar CPU -->
+        <div class="setting-row">
+          <div class="row-info">
+            <span class="row-title">Mostrar CPU</span>
+            <span class="row-sub">Visualizar el uso del procesador en la barra superior del sistema.</span>
+          </div>
+          <ToggleSwitch v-model="configStore.showTopbarCpu" />
+        </div>
+
+        <div class="row-divider"></div>
+
+        <!-- Fila: Mostrar RAM -->
+        <div class="setting-row">
+          <div class="row-info">
+            <span class="row-title">Mostrar RAM</span>
+            <span class="row-sub">Visualizar el consumo de memoria RAM en la barra superior del sistema.</span>
+          </div>
+          <ToggleSwitch v-model="configStore.showTopbarRam" />
+        </div>
+
+        <div class="row-divider"></div>
+
+        <!-- Fila: Mostrar Temperatura -->
+        <div class="setting-row">
+          <div class="row-info">
+            <span class="row-title">Mostrar Temperatura</span>
+            <span class="row-sub">Visualizar la temperatura del procesador en la barra superior del sistema.</span>
+          </div>
+          <ToggleSwitch v-model="configStore.showTopbarTemp" />
+        </div>
+      </div>
+    </SettingCard>
   </div>
 </template>
 
@@ -32,7 +104,7 @@ import { computed } from 'vue';
 import { useConfigStore } from '@/stores/configStore';
 import SettingCard from '@/components/ui/SettingCard.vue';
 import ToggleSwitch from '@/components/ui/ToggleSwitch.vue';
-import { Palette as PaletteIcon } from 'lucide-vue-next';
+import { Palette as PaletteIcon, Layout as LayoutIcon, PanelTop as PanelTopIcon } from 'lucide-vue-next';
 
 const configStore = useConfigStore();
 

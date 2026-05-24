@@ -17,6 +17,16 @@ export const useConfigStore = defineStore('config', () => {
   const wallpaperIndex = ref(0);
   const blurEnabled = ref(false);
 
+  // --- Dock: Mostrar Métricas de Telemetría (Persistidas) ---
+  const showDockCpu = ref(localStorage.getItem('antorui-dock-cpu') !== 'false');
+  const showDockRam = ref(localStorage.getItem('antorui-dock-ram') !== 'false');
+  const showDockTemp = ref(localStorage.getItem('antorui-dock-temp') !== 'false');
+
+  // --- TopBar: Mostrar Métricas de Telemetría (Persistidas) ---
+  const showTopbarCpu = ref(localStorage.getItem('antorui-topbar-cpu') !== 'false');
+  const showTopbarRam = ref(localStorage.getItem('antorui-topbar-ram') !== 'false');
+  const showTopbarTemp = ref(localStorage.getItem('antorui-topbar-temp') !== 'false');
+
   // --- Dock: Aplicaciones Ancladas Reactivas ---
   const savedPinned = localStorage.getItem('antorui-pinned-apps');
   const pinnedAppIds = ref<string[]>(
@@ -47,6 +57,30 @@ export const useConfigStore = defineStore('config', () => {
     },
     { deep: true }
   );
+
+  watch(showDockCpu, (newVal) => {
+    localStorage.setItem('antorui-dock-cpu', String(newVal));
+  });
+
+  watch(showDockRam, (newVal) => {
+    localStorage.setItem('antorui-dock-ram', String(newVal));
+  });
+
+  watch(showDockTemp, (newVal) => {
+    localStorage.setItem('antorui-dock-temp', String(newVal));
+  });
+
+  watch(showTopbarCpu, (newVal) => {
+    localStorage.setItem('antorui-topbar-cpu', String(newVal));
+  });
+
+  watch(showTopbarRam, (newVal) => {
+    localStorage.setItem('antorui-topbar-ram', String(newVal));
+  });
+
+  watch(showTopbarTemp, (newVal) => {
+    localStorage.setItem('antorui-topbar-temp', String(newVal));
+  });
 
   // ---- Getters ----
   // Retorna las imágenes cargadas en la carpeta virtual de Imágenes
@@ -123,6 +157,12 @@ export const useConfigStore = defineStore('config', () => {
     systemWallpapers,
     wallpaper,
     pinnedAppIds,
+    showDockCpu,
+    showDockRam,
+    showDockTemp,
+    showTopbarCpu,
+    showTopbarRam,
+    showTopbarTemp,
     setTheme,
     toggleTheme,
     setWallpaper,

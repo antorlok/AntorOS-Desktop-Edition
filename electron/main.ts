@@ -66,6 +66,18 @@ ipcMain.on('system:shutdown', (): void => {
   app.quit();
 });
 
+// ---- IPC Audio Event Handlers (Control de Volumen Global) ----
+ipcMain.on('audio:set-volume', (_event, level: number): void => {
+  console.log(`[Audio IPC] Volume set to: ${level * 100}%`);
+});
+
+ipcMain.on('audio:toggle-mute', (_event, isMuted: boolean): void => {
+  if (mainWindow) {
+    mainWindow.webContents.setAudioMuted(isMuted);
+    console.log(`[Audio IPC] Muted status set to: ${isMuted}`);
+  }
+});
+
 // ---- Ciclo de vida del Proceso Principal ----
 
 app.whenReady().then(() => {

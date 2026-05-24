@@ -14,6 +14,24 @@
         <div class="launcher-dot" :class="{ 'is-running': isAppRunning(app.name) }"></div>
       </button>
     </div>
+
+    <!-- Separador Cyberpunk (Solo visible si hay telemetría activa en el dock) -->
+    <div v-if="hasTelemetry" class="dock-divider"></div>
+
+    <!-- HUD de Telemetría Condicional (Derecha) -->
+    <div v-if="hasTelemetry" class="telemetry-hud" aria-label="Estadísticas de hardware">
+      <span v-if="configStore.showDockCpu" class="hud-item cpu-hud">
+        CPU <span class="hud-value">{{ osStore.stats.cpu_usage.toFixed(1).padStart(5, '0') }}%</span>
+      </span>
+      <span v-if="configStore.showDockCpu && (configStore.showDockRam || configStore.showDockTemp)" class="hud-separator">|</span>
+      <span v-if="configStore.showDockRam" class="hud-item ram-hud">
+        RAM <span class="hud-value">{{ osStore.stats.ram_usage.toFixed(1).padStart(5, '0') }}%</span>
+      </span>
+      <span v-if="configStore.showDockRam && configStore.showDockTemp" class="hud-separator">|</span>
+      <span v-if="configStore.showDockTemp" class="hud-item temp-hud">
+        TEMP <span class="hud-value">{{ (osStore.stats.cpu_temp ?? 42).toFixed(1).padStart(4, '0') }}°C</span>
+      </span>
+    </div>
   </div>
 </template>
 
@@ -33,6 +51,11 @@ const dockApps = computed(() => {
   return SYSTEM_APPS.filter((app) => 
     configStore.isAppPinned(app.id) || osStore.windows.some((w) => w.appName === app.name)
   );
+});
+
+// Comprobar reactivamente si hay alguna telemetría activa para mostrar la sección
+const hasTelemetry = computed(() => {
+  return configStore.showDockCpu || configStore.showDockRam || configStore.showDockTemp;
 });
 
 function launchApp(app: AppRegistryEntry) {
@@ -171,5 +194,62 @@ function isAppRunning(appName: string): boolean {
 .launcher-icon:hover .launcher-dot.is-running {
   background: var(--neon-magenta);
   box-shadow: var(--glow-magenta);
+}
+
+/* Separador de Dock y HUD */
+.dock-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--glass-border);
+  border-radius: 1px;
+  margin: 0 16px 0 10px;
+  transition: background 0.3s ease;
+}
+
+.taskbar-container:hover .dock-divider {
+  background: var(--neon-magenta);
+  opacity: 0.4;
+}
+
+/* HUD de Telemetría */
+.telemetry-hud {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.cpu-hud {
+  color: var(--neon-cyan);
+  text-shadow: var(--glow-cyan);
+}
+
+.ram-hud {
+  color: var(--neon-magenta);
+  text-shadow: var(--glow-magenta);
+}
+
+.temp-hud {
+  color: var(--neon-green);
+  text-shadow: var(--glow-green);
+}
+
+.hud-value {
+  font-weight: bold;
+  display: inline-block;
+}
+
+.hud-separator {
+  color: var(--glass-border);
 }
 </style>

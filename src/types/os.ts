@@ -29,4 +29,5 @@ export interface HardwareStats {
   batteryLevel?: number;
   batteryCharging?: boolean;
   networkOnline?: boolean;
+  cpu_temp?: number;
 }

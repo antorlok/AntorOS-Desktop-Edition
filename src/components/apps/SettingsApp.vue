@@ -99,11 +99,11 @@
         <ThemeSettings />
       </div>
 
-      <!-- PLACEHOLDER PESTAÑA: SONIDOS -->
-      <div v-else-if="activeTab === 'sounds'" class="fallback-tab">
-        <Volume2Icon class="fallback-icon" />
-        <h3 class="fallback-title">Panel de Audio</h3>
-        <p class="fallback-desc">Gestión de alertas del Kernel, sonidos de notificaciones táctiles y volumen del sintetizador de audio.</p>
+      <!-- PESTAÑA: SONIDOS -->
+      <div v-else-if="activeTab === 'sounds'">
+        <h2 class="content-title">Sonido del Sistema</h2>
+        <p class="content-sub">Ajusta el volumen de reproducción y administra la salida de audio de la sesión.</p>
+        <AudioSettings />
       </div>
     </main>
   </div>
@@ -122,6 +122,7 @@ import { useUserStore } from '@/stores/userStore';
 import WallpaperSettings from '@/components/apps/settings/WallpaperSettings.vue';
 import ThemeSettings from '@/components/apps/settings/ThemeSettings.vue';
 import UserSettings from '@/components/apps/settings/UserSettings.vue';
+import AudioSettings from '@/components/apps/settings/AudioSettings.vue';
 
 const userStore = useUserStore();
 

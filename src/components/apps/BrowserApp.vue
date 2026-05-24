@@ -173,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import {
   ArrowLeft,
   ArrowRight,
@@ -186,9 +186,11 @@ import {
 } from 'lucide-vue-next';
 import { useOSStore } from '@/stores/osStore';
 import { useConfigStore } from '@/stores/configStore';
+import { useAudioStore } from '@/stores/audioStore';
 
 const osStore = useOSStore();
 const configStore = useConfigStore();
+const audioStore = useAudioStore();
 
 // ── Estado del input de navegación ──
 const inputUrl = ref('https://google.com');
@@ -396,6 +398,42 @@ function mapsToUrl() {
 }
 
 /**
+ * Inyecta un script JS en el webview para sincronizar el volumen y silencio del host
+ */
+function syncVolumeToWebview() {
+  const wv = webviewRef.value;
+  if (!wv) return;
+
+  const volumeVal = audioStore.isMuted ? 0 : audioStore.volume / 100;
+  const isMutedVal = audioStore.isMuted;
+
+  // Script seguro que busca y ajusta dinámicamente todo elemento multimedia en el guest
+  const jsScript = `
+    (function() {
+      const mediaElements = document.querySelectorAll('video, audio');
+      mediaElements.forEach(el => {
+        el.volume = ${volumeVal};
+        el.muted = ${isMutedVal};
+      });
+    })();
+  `;
+
+  wv.executeJavaScript(jsScript).catch((err) => {
+    // Silenciar logs de advertencia de Chromium de carga asíncrona temprana
+    console.debug('[BrowserApp WebView] Error synchronizing audio volume:', err);
+  });
+}
+
+// Sincronizar reactivamente cuando el volumen o silencio cambia en Pinia
+watch(
+  () => [audioStore.volume, audioStore.isMuted],
+  () => {
+    syncVolumeToWebview();
+  },
+  { deep: true }
+);
+
+/**
  * Sincroniza la barra de URL después de que el webview termina de cargar.
  * Solo actualiza el input visible para el usuario, evitando forzar una
  * re-navegación cíclica en el webview de Electron.
@@ -407,6 +445,8 @@ function syncUrlFromWebview() {
   if (url && url !== 'about:blank') {
     inputUrl.value = url;
   }
+  // Sincronizar volumen inmediatamente después de cargar una nueva página
+  syncVolumeToWebview();
 }
 
 function goBack()    { webviewRef.value?.goBack(); }
@@ -451,6 +491,10 @@ onMounted(async () => {
   // Escuchar el evento context-menu de Electron del webview guest
   if (webviewRef.value) {
     webviewRef.value.addEventListener('context-menu', handleWebviewContextMenu);
+    // Sincronizar audio en cuanto el DOM del guest esté listo
+    webviewRef.value.addEventListener('dom-ready', () => {
+      syncVolumeToWebview();
+    });
   }
 
   // Cerrar el menú contextual al hacer clic izquierdo en la ventana

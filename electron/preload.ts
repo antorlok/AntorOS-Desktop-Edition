@@ -14,6 +14,12 @@ const osAPI = {
   shutdown: (): void => {
     ipcRenderer.send('system:shutdown');
   },
+  setVolume: (level: number): void => {
+    ipcRenderer.send('audio:set-volume', level);
+  },
+  toggleMute: (isMuted: boolean): void => {
+    ipcRenderer.send('audio:toggle-mute', isMuted);
+  },
 };
 
 contextBridge.exposeInMainWorld('osAPI', osAPI);
