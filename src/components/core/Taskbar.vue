@@ -41,15 +41,19 @@ import { useOSStore } from '@/stores/osStore';
 import { useConfigStore } from '@/stores/configStore';
 import { SYSTEM_APPS, type AppRegistryEntry } from '@/registry/apps';
 
+import { useStoreStore } from '@/stores/storeStore';
+
 const osStore = useOSStore();
 const configStore = useConfigStore();
+const storeStore = useStoreStore();
 
 let clickTimeout: ReturnType<typeof setTimeout> | null = null;
 
-// Determinar dinámicamente qué aplicaciones se renderizan en el Dock (ancladas O ejecutándose)
+// Determinar dinámicamente qué aplicaciones se renderizan en el Dock (ancladas O ejecutándose) y que estén instaladas
 const dockApps = computed(() => {
   return SYSTEM_APPS.filter((app) => 
-    configStore.isAppPinned(app.id) || osStore.windows.some((w) => w.appName === app.name)
+    storeStore.installedAppIds.includes(app.id) &&
+    (configStore.isAppPinned(app.id) || osStore.windows.some((w) => w.appName === app.name))
   );
 });
 

@@ -30,7 +30,7 @@ export const useConfigStore = defineStore('config', () => {
   // --- Dock: Aplicaciones Ancladas Reactivas ---
   const savedPinned = localStorage.getItem('antorui-pinned-apps');
   const pinnedAppIds = ref<string[]>(
-    savedPinned ? JSON.parse(savedPinned) : ['browser', 'terminal', 'settings', 'monitor', 'files']
+    savedPinned ? JSON.parse(savedPinned) : ['browser', 'terminal', 'settings', 'store', 'monitor', 'files']
   );
 
   // ---- Watchers reactivos en el Store ----

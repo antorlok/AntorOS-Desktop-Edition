@@ -12,16 +12,11 @@ import {
   Calendar,
   Clock,
   Mic,
-  type LucideIcon,
-  // Iconos de control de estado y energía
-  WifiOff,
-  BatteryCharging,
-  BatteryFull,
-  BatteryMedium,
-  BatteryLow,
-  Volume2,
-  VolumeX,
-  Power
+  ShoppingBag,
+  Music,
+  Code,
+  Gauge,
+  type LucideIcon
 } from 'lucide-vue-next';
 
 export interface AppRegistryEntry {
@@ -31,6 +26,10 @@ export interface AppRegistryEntry {
   icon: LucideIcon;
   defaultWidth?: number;
   defaultHeight?: number;
+  isCore: boolean;
+  description: string;
+  developer: string;
+  size: string;
 }
 
 // Catálogo centralizado de aplicaciones del sistema operativo AntorUI
@@ -42,6 +41,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Globe,
     defaultWidth: 1000,
     defaultHeight: 600,
+    isCore: true,
+    description: 'Navegador web virtual de alta velocidad.',
+    developer: 'AntorOS Core Team',
+    size: '85 MB'
   },
   {
     id: 'terminal',
@@ -50,6 +53,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: TerminalSquare,
     defaultWidth: 700,
     defaultHeight: 450,
+    isCore: true,
+    description: 'Línea de comandos nativa de AntorOS.',
+    developer: 'AntorOS Core Team',
+    size: '12 MB'
   },
   {
     id: 'settings',
@@ -58,6 +65,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Settings,
     defaultWidth: 800,
     defaultHeight: 500,
+    isCore: true,
+    description: 'Centro de control de personalización y dispositivos.',
+    developer: 'AntorOS Core Team',
+    size: '42 MB'
   },
   {
     id: 'monitor',
@@ -66,6 +77,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Activity,
     defaultWidth: 850,
     defaultHeight: 550,
+    isCore: true,
+    description: 'Monitorización de CPU, RAM y telemetrías.',
+    developer: 'AntorOS Core Team',
+    size: '18 MB'
   },
   {
     id: 'files',
@@ -74,6 +89,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: FolderOpen,
     defaultWidth: 900,
     defaultHeight: 550,
+    isCore: true,
+    description: 'Explorador y gestor de archivos virtual.',
+    developer: 'AntorOS Core Team',
+    size: '34 MB'
   },
   {
     id: 'notes',
@@ -82,6 +101,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: FileText,
     defaultWidth: 700,
     defaultHeight: 520,
+    isCore: true,
+    description: 'Editor de notas de texto plano.',
+    developer: 'AntorOS Core Team',
+    size: '8 MB'
   },
   {
     id: 'camera',
@@ -90,6 +113,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Camera,
     defaultWidth: 640,
     defaultHeight: 560,
+    isCore: true,
+    description: 'Aplicación de cámara interactiva cyberpunk.',
+    developer: 'AntorOS Core Team',
+    size: '22 MB'
   },
   {
     id: 'network',
@@ -98,6 +125,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Wifi,
     defaultWidth: 750,
     defaultHeight: 480,
+    isCore: true,
+    description: 'Gestor y escáner de redes virtuales.',
+    developer: 'AntorOS Core Team',
+    size: '15 MB'
   },
   {
     id: 'office',
@@ -106,6 +137,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: BookOpen,
     defaultWidth: 950,
     defaultHeight: 600,
+    isCore: true,
+    description: 'Suite de oficina y lectura de documentos.',
+    developer: 'AntorOS Core Team',
+    size: '95 MB'
   },
   {
     id: 'calculator',
@@ -114,6 +149,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Calculator,
     defaultWidth: 350,
     defaultHeight: 490,
+    isCore: true,
+    description: 'Calculadora científica gamer.',
+    developer: 'AntorOS Core Team',
+    size: '6 MB'
   },
   {
     id: 'calendar',
@@ -122,6 +161,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Calendar,
     defaultWidth: 720,
     defaultHeight: 540,
+    isCore: true,
+    description: 'Organizador y calendario digital.',
+    developer: 'AntorOS Core Team',
+    size: '14 MB'
   },
   {
     id: 'clock',
@@ -130,6 +173,10 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Clock,
     defaultWidth: 500,
     defaultHeight: 420,
+    isCore: true,
+    description: 'Reloj mundial, alarmas y temporizador.',
+    developer: 'AntorOS Core Team',
+    size: '10 MB'
   },
   {
     id: 'recorder',
@@ -138,5 +185,57 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     icon: Mic,
     defaultWidth: 400,
     defaultHeight: 500,
+    isCore: true,
+    description: 'Grabadora de audio y espectrógrafo.',
+    developer: 'AntorOS Core Team',
+    size: '16 MB'
   },
+  {
+    id: 'store',
+    name: 'StoreApp',
+    title: 'App Store',
+    icon: ShoppingBag,
+    defaultWidth: 900,
+    defaultHeight: 600,
+    isCore: true,
+    description: 'Tienda oficial de aplicaciones AntorOS.',
+    developer: 'AntorOS Core Team',
+    size: '28 MB'
+  },
+  {
+    id: 'neonplayer',
+    name: 'NeonPlayerApp',
+    title: 'Neon Player',
+    icon: Music,
+    defaultWidth: 750,
+    defaultHeight: 500,
+    isCore: false,
+    description: 'Reproductor de música futurista con espectrómetro reactivo.',
+    developer: 'antorlok Systems',
+    size: '45 MB'
+  },
+  {
+    id: 'cybercode',
+    name: 'CyberCodeApp',
+    title: 'CyberCode',
+    icon: Code,
+    defaultWidth: 850,
+    defaultHeight: 550,
+    isCore: false,
+    description: 'Editor de código moderno con coloreado de sintaxis neón.',
+    developer: 'antorlok Systems',
+    size: '56 MB'
+  },
+  {
+    id: 'sysbench',
+    name: 'SysBenchApp',
+    title: 'SysBench',
+    icon: Gauge,
+    defaultWidth: 650,
+    defaultHeight: 480,
+    isCore: false,
+    description: 'Herramienta de pruebas de rendimiento extremo del kernel.',
+    developer: 'antorlok Labs',
+    size: '30 MB'
+  }
 ];

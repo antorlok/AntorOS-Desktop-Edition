@@ -21,8 +21,14 @@
           />
         </div>
 
-        <!-- Rejilla de Aplicaciones (App Grid) -->
-        <div class="app-grid" role="navigation" aria-label="Aplicaciones de AntorUI">
+        <!-- Rejilla de Aplicaciones (App Grid) con transición premium -->
+        <TransitionGroup
+          tag="div"
+          class="app-grid"
+          name="grid-item-fade"
+          role="navigation"
+          aria-label="Aplicaciones de AntorUI"
+        >
           <button
             v-for="app in filteredApps"
             :key="app.id"
@@ -36,11 +42,11 @@
             </div>
             <span class="app-title">{{ app.title }}</span>
           </button>
-          
-          <!-- Estado vacío / Sin resultados -->
-          <div v-if="filteredApps.length === 0" class="empty-state">
-            Ninguna aplicación coincide con la búsqueda.
-          </div>
+        </TransitionGroup>
+
+        <!-- Estado vacío / Sin resultados -->
+        <div v-if="filteredApps.length === 0" class="empty-state">
+          Ninguna aplicación coincide con la búsqueda o está instalada.
         </div>
       </div>
     </div>
@@ -50,18 +56,21 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import { useOSStore } from '@/stores/osStore';
+import { useStoreStore } from '@/stores/storeStore';
 import { SYSTEM_APPS, type AppRegistryEntry } from '@/registry/apps';
 import { Search as SearchIcon } from 'lucide-vue-next';
 
 const osStore = useOSStore();
+const storeStore = useStoreStore();
 const searchQuery = ref('');
 const searchInputRef = ref<HTMLInputElement | null>(null);
 
-// Filtrar las aplicaciones según el texto ingresado en el buscador
+// Filtrar las aplicaciones según el texto ingresado en el buscador y que estén instaladas
 const filteredApps = computed(() => {
+  const installed = SYSTEM_APPS.filter((app) => storeStore.installedAppIds.includes(app.id));
   const query = searchQuery.value.trim().toLowerCase();
-  if (!query) return SYSTEM_APPS;
-  return SYSTEM_APPS.filter(
+  if (!query) return installed;
+  return installed.filter(
     (app) =>
       app.title.toLowerCase().includes(query) ||
       app.name.toLowerCase().includes(query)
@@ -360,5 +369,24 @@ watch(
     opacity: 0;
     transform: scale(0.95) translateY(15px);
   }
+}
+
+/* ── TRANSICIÓN PREMIUM PARA LA REJILLA DE APPS ── */
+.grid-item-fade-enter-active,
+.grid-item-fade-leave-active,
+.grid-item-fade-move {
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.grid-item-fade-enter-from,
+.grid-item-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.85) translateY(12px);
+}
+
+.grid-item-fade-leave-active {
+  position: absolute;
+  /* Mantiene un tamaño fijo para evitar saltos durante la salida de flex/grid */
+  width: 120px;
 }
 </style>
