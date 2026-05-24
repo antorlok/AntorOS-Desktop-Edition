@@ -135,13 +135,25 @@ export const useConfigStore = defineStore('config', () => {
   }
 
   // --- Configuración: Navegación de Pestaña Activa en la App de Ajustes ---
-  const settingsActiveTab = ref<'account' | 'wallpaper' | 'theme' | 'sounds' | 'network'>('account');
+  const settingsActiveTab = ref<'account' | 'wallpaper' | 'theme' | 'sounds' | 'network' | 'battery' | 'about'>('account');
+
+  // --- Pantalla: Brillo del Sistema (Persistido) ---
+  const savedBrightness = localStorage.getItem('antorui-brightness');
+  const brightness = ref(savedBrightness ? parseInt(savedBrightness, 10) : 100);
+
+  watch(brightness, (newVal) => {
+    localStorage.setItem('antorui-brightness', String(newVal));
+    document.documentElement.style.setProperty('--system-brightness', `${newVal}%`);
+  }, { immediate: true });
 
   // --- Energía: Modo de Ahorro de Batería ---
   const batterySaver = ref(localStorage.getItem('antorui-battery-saver') === 'true');
 
   watch(batterySaver, (newVal) => {
     localStorage.setItem('antorui-battery-saver', String(newVal));
+    if (newVal) {
+      brightness.value = 35; // Al activar ahorro de batería se reduce el brillo al 35%
+    }
   });
 
   // Acciones para Anclar / Desanclar del Dock
@@ -174,6 +186,7 @@ export const useConfigStore = defineStore('config', () => {
     showTopbarRam,
     showTopbarTemp,
     settingsActiveTab,
+    brightness,
     batterySaver,
     setTheme,
     toggleTheme,

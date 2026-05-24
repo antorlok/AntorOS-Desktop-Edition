@@ -67,6 +67,24 @@
 
     <div class="menu-divider"></div>
 
+    <!-- SECCIÓN 2.5: CONTROL DESLIZANTE DE BRILLO RÁPIDO -->
+    <div class="quick-slider-section">
+      <div class="slider-icon-btn-static" title="Brillo de pantalla">
+        <SunIcon class="slider-icon-svg glow-sun" />
+      </div>
+      <input
+        type="range"
+        min="20"
+        max="100"
+        v-model.number="configStore.brightness"
+        class="quick-slider"
+        aria-label="Brillo rápido"
+      />
+      <span class="quick-slider-val">{{ configStore.brightness }}%</span>
+    </div>
+
+    <div class="menu-divider"></div>
+
     <!-- SECCIÓN 3: BOTONES COMPACTOS DE ENERGÍA (HORIZONTAL) -->
     <div class="power-buttons-row">
       <!-- Bloquear Sesión -->
@@ -103,7 +121,8 @@ import {
   WifiOff as WifiOffIcon,
   ChevronRight as ChevronRightIcon,
   Battery as BatteryIcon,
-  BatteryCharging as BatteryChargingIcon
+  BatteryCharging as BatteryChargingIcon,
+  Sun as SunIcon
 } from 'lucide-vue-next';
 
 const osStore = useOSStore();
@@ -398,6 +417,7 @@ onUnmounted(() => {
 
 .quick-slider {
   -webkit-appearance: none;
+  appearance: none; /* Standard property for cross-browser compatibility */
   flex: 1;
   height: 4px;
   border-radius: 2px;
@@ -411,6 +431,7 @@ onUnmounted(() => {
 
 .quick-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
+  appearance: none; /* Standard property for cross-browser compatibility */
   height: 12px;
   width: 12px;
   border-radius: 50%;
@@ -523,5 +544,20 @@ onUnmounted(() => {
 
 .power-btn-circle:hover .btn-tooltip {
   opacity: 1;
+}
+
+/* Estilos de Icono de Brillo Estático */
+.slider-icon-btn-static {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  width: 24px;
+  height: 24px;
+}
+
+.glow-sun {
+  color: var(--neon-cyan);
+  filter: drop-shadow(0 0 4px var(--neon-cyan));
 }
 </style>

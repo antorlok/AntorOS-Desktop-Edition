@@ -42,6 +42,16 @@
           <span>Cuenta de Usuario</span>
         </button>
 
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ 'nav-item-active': configStore.settingsActiveTab === 'about' }"
+          @click="configStore.settingsActiveTab = 'about'"
+        >
+          <InfoIcon class="nav-icon" />
+          <span>Información del Sistema</span>
+        </button>
+
         <span class="menu-label">Personalización</span>
         <button
           type="button"
@@ -83,6 +93,16 @@
           <WifiIcon class="nav-icon" />
           <span>Red Inalámbrica</span>
         </button>
+
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ 'nav-item-active': configStore.settingsActiveTab === 'battery' }"
+          @click="configStore.settingsActiveTab = 'battery'"
+        >
+          <BatteryIcon class="nav-icon" />
+          <span>Batería y Brillo</span>
+        </button>
       </nav>
     </aside>
 
@@ -93,6 +113,13 @@
         <h2 class="content-title">Cuenta de Usuario</h2>
         <p class="content-sub">Administra tu perfil, avatar e información de seguridad del sistema.</p>
         <UserSettings />
+      </div>
+
+      <!-- PESTAÑA: INFORMACIÓN DEL SISTEMA -->
+      <div v-else-if="configStore.settingsActiveTab === 'about'">
+        <h2 class="content-title">Información del Sistema</h2>
+        <p class="content-sub">Detalles acerca de la distribución Antor OS y especificaciones técnicas de la sesión.</p>
+        <AboutSettings />
       </div>
 
       <!-- PESTAÑA: FONDO DE PANTALLA -->
@@ -122,6 +149,13 @@
         <p class="content-sub">Gestiona la interfaz de Wi-Fi virtual y conéctate a redes inalámbricas.</p>
         <NetworkSettings />
       </div>
+
+      <!-- PESTAÑA: BATERÍA Y BRILLO -->
+      <div v-else-if="configStore.settingsActiveTab === 'battery'">
+        <h2 class="content-title">Batería y Brillo</h2>
+        <p class="content-sub">Administra el brillo de la pantalla, ahorro de energía virtual y supervisa el consumo.</p>
+        <BatterySettings />
+      </div>
     </main>
   </div>
 </template>
@@ -134,7 +168,9 @@ import {
   Image as ImageIcon,
   Palette as PaletteIcon,
   Volume2 as Volume2Icon,
-  Wifi as WifiIcon
+  Wifi as WifiIcon,
+  Battery as BatteryIcon,
+  Info as InfoIcon
 } from 'lucide-vue-next';
 import { useUserStore } from '@/stores/userStore';
 import { useConfigStore } from '@/stores/configStore';
@@ -143,6 +179,8 @@ import ThemeSettings from '@/components/apps/settings/ThemeSettings.vue';
 import UserSettings from '@/components/apps/settings/UserSettings.vue';
 import AudioSettings from '@/components/apps/settings/AudioSettings.vue';
 import NetworkSettings from '@/components/apps/settings/NetworkSettings.vue';
+import BatterySettings from '@/components/apps/settings/BatterySettings.vue';
+import AboutSettings from '@/components/apps/settings/AboutSettings.vue';
 
 const userStore = useUserStore();
 const configStore = useConfigStore();
