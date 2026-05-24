@@ -2,20 +2,6 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { VolumeX, Volume1, Volume2 } from 'lucide-vue-next';
 
-// Extender la interfaz global Window para TypeScript
-declare global {
-  interface Window {
-    osAPI: {
-      minimizeWindow: () => void;
-      maximizeWindow: () => void;
-      closeWindow: () => void;
-      shutdown: () => void;
-      setVolume: (level: number) => void;
-      toggleMute: (isMuted: boolean) => void;
-    };
-  }
-}
-
 export const useAudioStore = defineStore('audio', () => {
   // ---- Recuperación del Estado del Almacenamiento Local ----
   const savedVolume = localStorage.getItem('antorui-audio-volume');
