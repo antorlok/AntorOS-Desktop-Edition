@@ -13,6 +13,15 @@ import {
   Clock,
   Mic,
   type LucideIcon,
+  // Iconos de control de estado y energía
+  WifiOff,
+  BatteryCharging,
+  BatteryFull,
+  BatteryMedium,
+  BatteryLow,
+  Volume2,
+  VolumeX,
+  Power
 } from 'lucide-vue-next';
 
 export interface AppRegistryEntry {

@@ -11,6 +11,9 @@ const osAPI = {
   closeWindow: (): void => {
     ipcRenderer.send('window:close');
   },
+  shutdown: (): void => {
+    ipcRenderer.send('system:shutdown');
+  },
 };
 
 contextBridge.exposeInMainWorld('osAPI', osAPI);

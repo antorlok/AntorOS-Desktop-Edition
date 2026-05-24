@@ -26,4 +26,7 @@ export interface WindowProcess {
 export interface HardwareStats {
   cpu_usage: number;
   ram_usage: number;
+  batteryLevel?: number;
+  batteryCharging?: boolean;
+  networkOnline?: boolean;
 }

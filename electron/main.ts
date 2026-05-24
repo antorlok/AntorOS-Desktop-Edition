@@ -62,6 +62,10 @@ ipcMain.on('window:close', (): void => {
   }
 });
 
+ipcMain.on('system:shutdown', (): void => {
+  app.quit();
+});
+
 // ---- Ciclo de vida del Proceso Principal ----
 
 app.whenReady().then(() => {

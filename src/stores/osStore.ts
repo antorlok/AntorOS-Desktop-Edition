@@ -10,7 +10,15 @@ export const useOSStore = defineStore('os', () => {
   const windows = ref<WindowProcess[]>([]);
   const activeWindowId = ref<string | null>(null);
   const baseZIndex = ref(100);
-  const stats = ref<HardwareStats>({ cpu_usage: 0, ram_usage: 0 });
+  const stats = ref<HardwareStats>({
+    cpu_usage: 0,
+    ram_usage: 0,
+    batteryLevel: 85,
+    batteryCharging: false,
+    networkOnline: true
+  });
+  // Controla si el sistema operativo está experimentando el reinicio del Kernel
+  const isBooting = ref(false);
   // Controla si el usuario superó la pantalla de bloqueo
   const isAuthenticated = ref(false);
   // Controla si el menú general de aplicaciones (App Grid) está visible
@@ -215,6 +223,7 @@ export const useOSStore = defineStore('os', () => {
     activeWindowId,
     baseZIndex,
     stats,
+    isBooting,
     isAuthenticated,
     isLauncherOpen,
     fileSystem,
