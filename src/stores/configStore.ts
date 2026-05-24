@@ -134,6 +134,16 @@ export const useConfigStore = defineStore('config', () => {
     }
   }
 
+  // --- Configuración: Navegación de Pestaña Activa en la App de Ajustes ---
+  const settingsActiveTab = ref<'account' | 'wallpaper' | 'theme' | 'sounds' | 'network'>('account');
+
+  // --- Energía: Modo de Ahorro de Batería ---
+  const batterySaver = ref(localStorage.getItem('antorui-battery-saver') === 'true');
+
+  watch(batterySaver, (newVal) => {
+    localStorage.setItem('antorui-battery-saver', String(newVal));
+  });
+
   // Acciones para Anclar / Desanclar del Dock
   function pinApp(appId: string) {
     if (!pinnedAppIds.value.includes(appId)) {
@@ -163,6 +173,8 @@ export const useConfigStore = defineStore('config', () => {
     showTopbarCpu,
     showTopbarRam,
     showTopbarTemp,
+    settingsActiveTab,
+    batterySaver,
     setTheme,
     toggleTheme,
     setWallpaper,

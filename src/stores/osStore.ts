@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { WindowProcess, HardwareStats } from '@/types/os';
+import { useConfigStore } from '@/stores/configStore';
+import { SYSTEM_APPS } from '@/registry/apps';
 
 // Offset en cascada para cada nueva ventana
 const CASCADE_OFFSET = 30;
@@ -84,6 +86,24 @@ export const useOSStore = defineStore('os', () => {
       windowTitle = title ?? '';
       width = defaultWidth ?? 800;
       height = defaultHeight ?? 500;
+    }
+
+    // Redirección de Centro de Redes (NetworkApp) a la pestaña de redes de la app de Configuración
+    if (appName === 'NetworkApp') {
+      const configStore = useConfigStore();
+      configStore.settingsActiveTab = 'network';
+
+      const existingSettings = windows.value.find((w) => w.appName === 'SettingsApp');
+      if (existingSettings) {
+        existingSettings.isMinimized = false;
+        focusWindow(existingSettings.id);
+        return existingSettings.id;
+      } else {
+        const settingsApp = SYSTEM_APPS.find((app) => app.name === 'SettingsApp');
+        if (settingsApp) {
+          return openWindow(settingsApp);
+        }
+      }
     }
 
     const id = crypto.randomUUID();

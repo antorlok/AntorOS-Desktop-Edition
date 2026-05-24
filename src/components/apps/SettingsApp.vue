@@ -35,8 +35,8 @@
         <button
           type="button"
           class="nav-item"
-          :class="{ 'nav-item-active': activeTab === 'account' }"
-          @click="activeTab = 'account'"
+          :class="{ 'nav-item-active': configStore.settingsActiveTab === 'account' }"
+          @click="configStore.settingsActiveTab = 'account'"
         >
           <UserIcon class="nav-icon" />
           <span>Cuenta de Usuario</span>
@@ -46,8 +46,8 @@
         <button
           type="button"
           class="nav-item"
-          :class="{ 'nav-item-active': activeTab === 'wallpaper' }"
-          @click="activeTab = 'wallpaper'"
+          :class="{ 'nav-item-active': configStore.settingsActiveTab === 'wallpaper' }"
+          @click="configStore.settingsActiveTab = 'wallpaper'"
         >
           <ImageIcon class="nav-icon" />
           <span>Fondo de pantalla</span>
@@ -56,8 +56,8 @@
         <button
           type="button"
           class="nav-item"
-          :class="{ 'nav-item-active': activeTab === 'theme' }"
-          @click="activeTab = 'theme'"
+          :class="{ 'nav-item-active': configStore.settingsActiveTab === 'theme' }"
+          @click="configStore.settingsActiveTab = 'theme'"
         >
           <PaletteIcon class="nav-icon" />
           <span>Personalización</span>
@@ -67,11 +67,21 @@
         <button
           type="button"
           class="nav-item"
-          :class="{ 'nav-item-active': activeTab === 'sounds' }"
-          @click="activeTab = 'sounds'"
+          :class="{ 'nav-item-active': configStore.settingsActiveTab === 'sounds' }"
+          @click="configStore.settingsActiveTab = 'sounds'"
         >
           <Volume2Icon class="nav-icon" />
           <span>Sonidos</span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ 'nav-item-active': configStore.settingsActiveTab === 'network' }"
+          @click="configStore.settingsActiveTab = 'network'"
+        >
+          <WifiIcon class="nav-icon" />
+          <span>Red Inalámbrica</span>
         </button>
       </nav>
     </aside>
@@ -79,31 +89,38 @@
     <!-- ÁREA DE CONTENIDO DINÁMICO (DERECHA) -->
     <main class="settings-main-content">
       <!-- PESTAÑA: CUENTA DE USUARIO -->
-      <div v-if="activeTab === 'account'">
+      <div v-if="configStore.settingsActiveTab === 'account'">
         <h2 class="content-title">Cuenta de Usuario</h2>
         <p class="content-sub">Administra tu perfil, avatar e información de seguridad del sistema.</p>
         <UserSettings />
       </div>
 
       <!-- PESTAÑA: FONDO DE PANTALLA -->
-      <div v-else-if="activeTab === 'wallpaper'">
+      <div v-else-if="configStore.settingsActiveTab === 'wallpaper'">
         <h2 class="content-title">Personalizar Fondo</h2>
         <p class="content-sub">Elige un fondo de pantalla gamer y gestiona la apariencia del escritorio central.</p>
         <WallpaperSettings />
       </div>
 
       <!-- PESTAÑA COMPLETA: PERSONALIZACIÓN -->
-      <div v-else-if="activeTab === 'theme'">
+      <div v-else-if="configStore.settingsActiveTab === 'theme'">
         <h2 class="content-title">Personalización</h2>
         <p class="content-sub">Elige el esquema de colores, efectos visuales y paneles del entorno del sistema.</p>
         <ThemeSettings />
       </div>
 
       <!-- PESTAÑA: SONIDOS -->
-      <div v-else-if="activeTab === 'sounds'">
+      <div v-else-if="configStore.settingsActiveTab === 'sounds'">
         <h2 class="content-title">Sonido del Sistema</h2>
         <p class="content-sub">Ajusta el volumen de reproducción y administra la salida de audio de la sesión.</p>
         <AudioSettings />
+      </div>
+
+      <!-- PESTAÑA: RED INALÁMBRICA -->
+      <div v-else-if="configStore.settingsActiveTab === 'network'">
+        <h2 class="content-title">Red Inalámbrica</h2>
+        <p class="content-sub">Gestiona la interfaz de Wi-Fi virtual y conéctate a redes inalámbricas.</p>
+        <NetworkSettings />
       </div>
     </main>
   </div>
@@ -116,18 +133,20 @@ import {
   User as UserIcon,
   Image as ImageIcon,
   Palette as PaletteIcon,
-  Volume2 as Volume2Icon
+  Volume2 as Volume2Icon,
+  Wifi as WifiIcon
 } from 'lucide-vue-next';
 import { useUserStore } from '@/stores/userStore';
+import { useConfigStore } from '@/stores/configStore';
 import WallpaperSettings from '@/components/apps/settings/WallpaperSettings.vue';
 import ThemeSettings from '@/components/apps/settings/ThemeSettings.vue';
 import UserSettings from '@/components/apps/settings/UserSettings.vue';
 import AudioSettings from '@/components/apps/settings/AudioSettings.vue';
+import NetworkSettings from '@/components/apps/settings/NetworkSettings.vue';
 
 const userStore = useUserStore();
+const configStore = useConfigStore();
 
-// Estado Reactivo de Pestaña Activa
-const activeTab = ref<'account' | 'wallpaper' | 'theme' | 'sounds'>('account');
 const searchQuery = ref('');
 </script>
 
