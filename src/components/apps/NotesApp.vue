@@ -9,18 +9,17 @@
 
       <div class="notes-list">
         <div
-          v-for="note in notes"
+          v-for="note in productivityStore.notes"
           :key="note.id"
           class="note-item"
-          :class="{ 'active-note': activeNoteId === note.id }"
-          @click="activeNoteId = note.id"
+          :class="{ 'active-note': productivityStore.activeNoteId === note.id }"
+          @click="productivityStore.activeNoteId = note.id"
         >
           <div class="note-item-meta">
             <FileTextIcon class="note-icon" />
-            <span class="note-item-title">{{ note.title || 'Sin título' }}</span>
+            <span class="note-item-title">{{ note.title || 'Nota Nueva' }}</span>
           </div>
           <button
-            v-if="notes.length > 1"
             class="delete-note-btn"
             @click.stop="deleteNote(note.id)"
             title="Eliminar nota"
@@ -34,24 +33,19 @@
     <!-- Área de Trabajo Derecha: Editor de Contenido -->
     <main class="notes-editor-area">
       <template v-if="activeNote">
-        <!-- Input del título editable -->
+        <!-- Cabecera del Editor -->
         <div class="editor-header">
-          <input
-            v-model="activeNote.title"
-            type="text"
-            class="note-title-input"
-            placeholder="Título de la nota..."
-            spellcheck="false"
-          />
+          <span class="note-title-display">{{ activeNote.title || 'Nota Nueva' }}</span>
           <span class="note-char-count">Caracteres: {{ activeNote.content.length }}</span>
         </div>
 
         <!-- Textarea del cuerpo de la nota -->
         <div class="editor-body">
           <textarea
-            v-model="activeNote.content"
+            :value="activeNote.content"
+            @input="handleNoteInput"
             class="note-textarea"
-            placeholder="Escribe tus pensamientos o notas aquí..."
+            placeholder="Escribe tus pensamientos o notas aquí (auto-guardado activo)..."
             spellcheck="false"
           ></textarea>
         </div>
@@ -67,49 +61,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
+import { useProductivityStore } from '@/stores/productivityStore';
 import { FileText as FileTextIcon } from 'lucide-vue-next';
 
-interface Note {
-  id: string;
-  title: string;
-  content: string;
-}
+const productivityStore = useProductivityStore();
 
-// Estado reactivo de las notas (DRY y persistente mientras viva la ventana)
-const notes = ref<Note[]>([
-  { id: '1', title: 'Nota 1', content: 'Contenido inicial de la nota de prueba.' },
-  { id: '2', title: 'Ideas OS', content: '1. Mejorar el visor de imágenes.\n2. Añadir soporte para reproducción de video real en el Nautilus.\n3. Integrar atajos de teclado.' }
-]);
-
-const activeNoteId = ref('1');
-
+// Computed para obtener la nota activa desde el store de Pinia
 const activeNote = computed(() => {
-  return notes.value.find((n) => n.id === activeNoteId.value) || null;
+  return productivityStore.notes.find((n) => n.id === productivityStore.activeNoteId) || null;
 });
 
 function createNewNote() {
-  const id = crypto.randomUUID();
-  const newNote: Note = {
-    id,
-    title: `Nueva Nota`,
-    content: ''
-  };
-  notes.value.push(newNote);
-  activeNoteId.value = id;
+  productivityStore.createNote();
+}
+
+function handleNoteInput(event: Event) {
+  if (activeNote.value) {
+    const val = (event.target as HTMLTextAreaElement).value;
+    productivityStore.updateNote(activeNote.value.id, val);
+  }
 }
 
 function deleteNote(id: string) {
-  if (notes.value.length <= 1) return;
-
-  const index = notes.value.findIndex((n) => n.id === id);
-  notes.value = notes.value.filter((n) => n.id !== id);
-
-  // Si eliminamos la activa, enfocar otra
-  if (activeNoteId.value === id) {
-    const nextActiveIndex = Math.max(0, index - 1);
-    activeNoteId.value = notes.value[nextActiveIndex]?.id || '';
-  }
+  productivityStore.deleteNote(id);
 }
 </script>
 
@@ -118,19 +93,18 @@ function deleteNote(id: string) {
   display: flex;
   width: 100%;
   height: 100%;
-  background: rgba(10, 15, 30, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #e2e8f0;
-  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
   overflow: hidden;
+  user-select: none;
 }
 
 /* Sidebar izquierdo */
 .notes-sidebar {
-  width: 180px;
-  background: rgba(2, 6, 23, 0.4);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  width: 190px;
+  background: var(--bg-secondary);
+  border-right: var(--glass-border);
   display: flex;
   flex-direction: column;
   padding: 16px 8px;
@@ -145,9 +119,9 @@ function deleteNote(id: string) {
 }
 
 .sidebar-title {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -158,10 +132,10 @@ function deleteNote(id: string) {
   justify-content: center;
   width: 22px;
   height: 22px;
-  background: rgba(34, 211, 238, 0.1);
-  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: var(--bg-primary);
+  border: var(--glass-border);
   border-radius: 4px;
-  color: #22d3ee;
+  color: var(--neon-cyan);
   font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -169,9 +143,10 @@ function deleteNote(id: string) {
 }
 
 .add-note-btn:hover {
-  background: rgba(34, 211, 238, 0.2);
-  border-color: #22d3ee;
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.2);
+  background: var(--neon-cyan);
+  color: #11111b;
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
 }
 
 .notes-list {
@@ -196,13 +171,14 @@ function deleteNote(id: string) {
 
 .note-item:hover {
   background: rgba(255, 255, 255, 0.03);
-  color: #22d3ee;
+  color: var(--neon-cyan);
 }
 
 .active-note {
-  background: rgba(34, 211, 238, 0.08) !important;
-  color: #22d3ee !important;
-  border-color: rgba(34, 211, 238, 0.2) !important;
+  background: rgba(0, 243, 255, 0.08) !important;
+  color: var(--neon-cyan) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: var(--glow-cyan);
 }
 
 .note-item-meta {
@@ -230,7 +206,7 @@ function deleteNote(id: string) {
   background: transparent;
   border: none;
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-secondary);
   cursor: pointer;
   line-height: 1;
   padding: 0 2px;
@@ -254,34 +230,30 @@ function deleteNote(id: string) {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: rgba(2, 6, 23, 0.35);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
+  border-bottom: var(--glass-border);
 }
 
-.note-title-input {
-  background: transparent;
-  border: none;
-  font-size: 1.1rem;
+.note-title-display {
+  font-size: 1.05rem;
   font-weight: bold;
-  color: #ffffff;
-  outline: none;
+  color: var(--text-primary);
   width: 70%;
-}
-
-.note-title-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .note-char-count {
   font-family: monospace;
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--text-secondary);
 }
 
 .editor-body {
   flex: 1;
   padding: 20px;
-  background: rgba(10, 15, 30, 0.1);
+  background: var(--bg-primary);
 }
 
 .note-textarea {
@@ -289,7 +261,7 @@ function deleteNote(id: string) {
   height: 100%;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text-primary);
   font-family: inherit;
   font-size: 0.95rem;
   line-height: 1.6;
@@ -298,7 +270,8 @@ function deleteNote(id: string) {
 }
 
 .note-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--text-secondary);
+  opacity: 0.5;
 }
 
 .empty-editor-state {
@@ -308,12 +281,14 @@ function deleteNote(id: string) {
   justify-content: center;
   gap: 16px;
   flex: 1;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
 .empty-icon {
   width: 44px;
   height: 44px;
+  color: var(--text-secondary);
+  opacity: 0.3;
 }
 </style>

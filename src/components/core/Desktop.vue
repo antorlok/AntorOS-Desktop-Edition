@@ -53,6 +53,10 @@ const appRegistry: Record<string, Component> = {
   CameraApp: defineAsyncComponent(() => import('@/components/apps/CameraApp.vue')),
   NetworkApp: defineAsyncComponent(() => import('@/components/apps/NetworkApp.vue')),
   OfficeApp: defineAsyncComponent(() => import('@/components/apps/OfficeApp.vue')),
+  CalculatorApp: defineAsyncComponent(() => import('@/components/apps/CalculatorApp.vue')),
+  CalendarApp: defineAsyncComponent(() => import('@/components/apps/CalendarApp.vue')),
+  ClockApp: defineAsyncComponent(() => import('@/components/apps/ClockApp.vue')),
+  RecorderApp: defineAsyncComponent(() => import('@/components/apps/RecorderApp.vue')),
 };
 
 /**
