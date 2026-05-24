@@ -42,26 +42,7 @@
 
         <div class="divider"></div>
 
-        <!-- Fila 2: Segmented Control (Píldora Unificada) -->
-        <div class="segmented-control-area">
-          <span class="area-label">Ajuste de Imagen</span>
-          <div class="segmented-pill">
-            <button
-              v-for="style in fitStyles"
-              :key="style"
-              type="button"
-              class="pill-btn"
-              :class="{ 'pill-btn-active': activeFitStyle === style }"
-              @click="activeFitStyle = style"
-            >
-              {{ style }}
-            </button>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- Fila 3: Rejilla de Selección Rápida de Imágenes del Sistema -->
+        <!-- Fila 2: Rejilla de Selección Rápida de Imágenes del Sistema -->
         <div class="wallpaper-gallery-area">
           <span class="area-label">Galería de Imágenes del Sistema</span>
           <div class="gallery-grid">
@@ -142,8 +123,6 @@ import {
 const configStore = useConfigStore();
 
 // Estados Locales
-const fitStyles = ['Stretch', 'Fit', 'Fill', 'Tile', 'Pad'];
-const activeFitStyle = ref('Fill');
 const modeSpecific = ref(false);
 const transitionEffect = ref('fade');
 
@@ -188,7 +167,7 @@ const currentWallpaperName = computed(() => {
   border-radius: 8px;
   overflow: hidden;
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: var(--glass-border);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
@@ -218,8 +197,9 @@ const currentWallpaperName = computed(() => {
   font-family: monospace;
   font-size: 0.6rem;
   font-weight: bold;
-  color: #e5c890;
+  color: var(--neon-cyan);
   letter-spacing: 0.8px;
+  text-shadow: var(--glow-cyan);
 }
 
 .navigation-controls {
@@ -231,7 +211,7 @@ const currentWallpaperName = computed(() => {
 
 .file-name {
   font-size: 0.85rem;
-  color: #a6adc8;
+  color: var(--text-secondary);
   font-family: monospace;
   word-break: break-all;
 }
@@ -242,23 +222,24 @@ const currentWallpaperName = computed(() => {
 }
 
 .nav-btn {
-  background: #313244;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary);
+  border: var(--glass-border);
   border-radius: 8px;
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #cdd6f4;
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .nav-btn:hover {
-  background: #e5c890;
+  background: var(--neon-cyan);
   color: #11111b;
-  box-shadow: 0 0 10px rgba(229, 200, 144, 0.2);
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
 }
 
 .nav-icon {
@@ -268,56 +249,15 @@ const currentWallpaperName = computed(() => {
 
 .divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Control de segmentos */
-.segmented-control-area {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  background: var(--glass-border);
 }
 
 .area-label {
   font-size: 0.8rem;
   font-weight: bold;
-  color: #a6adc8;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.segmented-pill {
-  display: flex;
-  background: #11111b;
-  border-radius: 8px;
-  padding: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.pill-btn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #a6adc8;
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.pill-btn:hover {
-  color: #cdd6f4;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.pill-btn-active {
-  background: #e5c890 !important;
-  color: #11111b !important;
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(229, 200, 144, 0.25);
 }
 
 /* Rejilla de Selección Rápida de Imágenes */
@@ -335,8 +275,8 @@ const currentWallpaperName = computed(() => {
 }
 
 .gallery-card {
-  background: #11111b;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary);
+  border: var(--glass-border);
   border-radius: 8px;
   padding: 6px;
   display: flex;
@@ -349,15 +289,15 @@ const currentWallpaperName = computed(() => {
 }
 
 .gallery-card:hover {
-  border-color: rgba(229, 200, 144, 0.3);
+  border-color: var(--neon-cyan);
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--glow-cyan);
 }
 
 .gallery-card-active {
-  border-color: #e5c890 !important;
-  box-shadow: 0 0 10px rgba(229, 200, 144, 0.25);
-  background: rgba(229, 200, 144, 0.04);
+  border-color: var(--neon-cyan) !important;
+  box-shadow: var(--glow-cyan);
+  background: rgba(0, 243, 255, 0.04);
 }
 
 .gallery-thumb {
@@ -365,12 +305,12 @@ const currentWallpaperName = computed(() => {
   height: 64px;
   object-fit: cover;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: var(--glass-border);
 }
 
 .gallery-name {
   font-size: 0.68rem;
-  color: #a6adc8;
+  color: var(--text-secondary);
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
@@ -380,7 +320,7 @@ const currentWallpaperName = computed(() => {
 }
 
 .gallery-card-active .gallery-name {
-  color: #e5c890;
+  color: var(--neon-cyan);
   font-weight: 600;
 }
 
@@ -407,17 +347,17 @@ const currentWallpaperName = computed(() => {
 .row-title {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #cdd6f4;
+  color: var(--text-primary);
 }
 
 .row-sub {
   font-size: 0.75rem;
-  color: #89b4fa; /* Color azulino sutil Catppuccin */
+  color: var(--text-secondary);
 }
 
 .row-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-border);
   margin: 6px 0;
 }
 
@@ -427,28 +367,29 @@ const currentWallpaperName = computed(() => {
 }
 
 .styled-select {
-  background: #313244;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-primary);
+  border: var(--glass-border);
   border-radius: 8px;
-  color: #cdd6f4;
+  color: var(--text-primary);
   font-family: inherit;
   font-size: 0.8rem;
   padding: 6px 32px 6px 12px;
   outline: none;
   cursor: pointer;
-  appearance: none; /* Oculta flecha por defecto */
-  transition: border-color 0.2s;
+  appearance: none;
+  transition: all 0.2s;
   min-width: 140px;
 }
 
 .styled-select:focus {
-  border-color: #e5c890;
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
 }
 
 .select-wrapper::after {
   content: '▼';
   font-size: 0.6rem;
-  color: #a6adc8;
+  color: var(--text-secondary);
   position: absolute;
   right: 12px;
   top: 50%;

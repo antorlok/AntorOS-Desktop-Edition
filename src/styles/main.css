@@ -7,14 +7,15 @@
 }
 
 body {
-  background-color: var(--bg-dark);
-  color: #ffffff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-family: var(--font-family-base);
   
   /* El OS Simulator opera a pantalla completa y contenida */
   overflow: hidden;
   width: 100vw;
   height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Ocultar las barras de scroll nativas en todo el entorno gráfico */

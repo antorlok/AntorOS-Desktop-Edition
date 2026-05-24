@@ -63,13 +63,13 @@ function isAppRunning(appName: string): boolean {
   padding: 8px 24px;
   
   /* Glassmorphism Cyber-Gamer Premium */
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(34, 211, 238, 0.2);
+  border: var(--glass-border);
   border-radius: 20px;
   box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.6), 
+    0 10px 40px rgba(0, 0, 0, 0.2), 
     inset 0 0 15px rgba(34, 211, 238, 0.05);
   
   z-index: 99999;
@@ -78,9 +78,9 @@ function isAppRunning(appName: string): boolean {
 }
 
 .taskbar-container:hover {
-  border-color: rgba(217, 70, 239, 0.3);
+  border-color: var(--neon-magenta);
   box-shadow: 
-    0 15px 50px rgba(0, 0, 0, 0.7), 
+    0 15px 50px rgba(0, 0, 0, 0.3), 
     inset 0 0 20px rgba(217, 70, 239, 0.1);
 }
 
@@ -103,7 +103,7 @@ function isAppRunning(appName: string): boolean {
   background: transparent; /* Quitado el recuadro gris de fondo */
   border: none; /* Sin bordes grises */
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-secondary);
   outline: none;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -117,11 +117,11 @@ function isAppRunning(appName: string): boolean {
 /* Efectos de Hover Premium: Escalar 1.1 y Brillar con Magenta Neón */
 .launcher-icon:hover {
   transform: scale(1.1) translateY(-4px);
-  color: #d946ef;
+  color: var(--neon-magenta);
 }
 
 .launcher-icon:hover .icon-svg {
-  filter: drop-shadow(0 0 8px #d946ef);
+  filter: drop-shadow(var(--glow-magenta));
 }
 
 /* Indicador de aplicación en ejecución (Dot) */
@@ -136,26 +136,27 @@ function isAppRunning(appName: string): boolean {
 }
 
 .launcher-dot.is-running {
-  background: #22d3ee;
-  box-shadow: 0 0 6px #22d3ee;
+  background: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
 }
 
 .launcher-icon:hover .launcher-dot.is-running {
-  background: #d946ef;
-  box-shadow: 0 0 8px #d946ef;
+  background: var(--neon-magenta);
+  box-shadow: var(--glow-magenta);
 }
 
 /* Separador de Dock y HUD */
 .dock-divider {
   width: 1px;
   height: 36px;
-  background: rgba(34, 211, 238, 0.2);
+  background: var(--glass-border);
   border-radius: 1px;
   transition: background 0.3s ease;
 }
 
 .taskbar-container:hover .dock-divider {
-  background: rgba(217, 70, 239, 0.25);
+  background: var(--neon-magenta);
+  opacity: 0.4;
 }
 
 /* HUD de Telemetría */
@@ -165,7 +166,7 @@ function isAppRunning(appName: string): boolean {
   gap: 12px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
 }
 
 .hud-item {
@@ -177,20 +178,21 @@ function isAppRunning(appName: string): boolean {
 }
 
 .cpu-hud {
-  color: rgba(34, 211, 238, 0.85);
+  color: var(--neon-cyan);
+  text-shadow: var(--glow-cyan);
 }
 
 .ram-hud {
-  color: rgba(217, 70, 239, 0.85);
+  color: var(--neon-magenta);
+  text-shadow: var(--glow-magenta);
 }
 
 .hud-value {
   font-weight: bold;
-  text-shadow: 0 0 6px currentColor;
   display: inline-block;
 }
 
 .hud-separator {
-  color: rgba(255, 255, 255, 0.15);
+  color: var(--glass-border);
 }
 </style>

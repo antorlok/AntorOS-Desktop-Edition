@@ -74,11 +74,11 @@
         <WallpaperSettings />
       </div>
 
-      <!-- PLACEHOLDER PESTAÑA: TEMA Y COLORES -->
-      <div v-else-if="activeTab === 'theme'" class="fallback-tab">
-        <PaletteIcon class="fallback-icon" />
-        <h3 class="fallback-title">Tema y Colores</h3>
-        <p class="fallback-desc">El sistema opera en modo oscuro nativo ciber-futurista de alta densidad. Próximamente se integrarán paletas de colores HSL personalizadas.</p>
+      <!-- PESTAÑA COMPLETA: TEMA Y COLORES -->
+      <div v-else-if="activeTab === 'theme'">
+        <h2 class="content-title">Tema y Colores</h2>
+        <p class="content-sub">Elige el esquema de colores de la interfaz gráfica y los paneles del sistema.</p>
+        <ThemeSettings />
       </div>
 
       <!-- PLACEHOLDER PESTAÑA: SONIDOS -->
@@ -100,6 +100,7 @@ import {
   Volume2 as Volume2Icon
 } from 'lucide-vue-next';
 import WallpaperSettings from '@/components/apps/settings/WallpaperSettings.vue';
+import ThemeSettings from '@/components/apps/settings/ThemeSettings.vue';
 
 // Estado Reactivo de Pestaña Activa
 const activeTab = ref<'wallpaper' | 'theme' | 'sounds'>('wallpaper');
@@ -111,22 +112,24 @@ const searchQuery = ref('');
   display: flex;
   width: 100%;
   height: 100%;
-  color: #cdd6f4;
-  background-color: #11111b; /* Tema oscuro base Catppuccin */
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
   font-family: system-ui, -apple-system, sans-serif;
   overflow: hidden;
   user-select: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* SIDEBAR DE NAVEGACIÓN */
 .settings-sidebar {
   width: 280px;
-  background-color: #181825; /* Fondo del Sidebar ligeramente más claro */
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-secondary);
+  border-right: var(--glass-border);
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
   gap: 20px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Tarjeta de Perfil de Usuario */
@@ -134,8 +137,8 @@ const searchQuery = ref('');
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: var(--glass-bg);
+  border: var(--glass-border);
   padding: 12px;
   border-radius: 10px;
 }
@@ -146,8 +149,8 @@ const searchQuery = ref('');
   height: 48px;
   border-radius: 50%;
   padding: 2px;
-  background: linear-gradient(135deg, #e5c890, #f2d5cf);
-  box-shadow: 0 0 10px rgba(229, 200, 144, 0.2);
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+  box-shadow: var(--glow-cyan);
 }
 
 .user-avatar {
@@ -155,7 +158,7 @@ const searchQuery = ref('');
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  background: #1e1e2e;
+  background: var(--bg-secondary);
 }
 
 .user-info {
@@ -166,12 +169,12 @@ const searchQuery = ref('');
 .username {
   font-size: 0.95rem;
   font-weight: bold;
-  color: #cdd6f4;
+  color: var(--text-primary);
 }
 
 .user-role {
   font-size: 0.7rem;
-  color: #a6adc8;
+  color: var(--text-secondary);
 }
 
 /* Buscador */
@@ -187,24 +190,25 @@ const searchQuery = ref('');
   transform: translateY(-50%);
   width: 16px;
   height: 16px;
-  color: #a6adc8;
+  color: var(--text-secondary);
 }
 
 .search-input {
   width: 100%;
-  background: rgba(2, 6, 23, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-bg);
+  border: var(--glass-border);
   border-radius: 8px;
   padding: 8px 12px 8px 36px;
-  color: #ffffff;
+  color: var(--text-primary);
   font-family: inherit;
   font-size: 0.8rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .search-input:focus {
-  border-color: #e5c890;
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
 }
 
 /* Navegación */
@@ -217,12 +221,13 @@ const searchQuery = ref('');
 .menu-label {
   font-size: 0.7rem;
   font-weight: bold;
-  color: #585b70;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-top: 14px;
   margin-bottom: 6px;
   padding-left: 10px;
+  opacity: 0.7;
 }
 
 .nav-item {
@@ -234,7 +239,7 @@ const searchQuery = ref('');
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: #a6adc8;
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: 0.85rem;
   font-weight: 500;
@@ -244,15 +249,15 @@ const searchQuery = ref('');
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.02);
-  color: #cdd6f4;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
 }
 
 .nav-item-active {
-  background: rgba(229, 200, 144, 0.15) !important;
-  color: #e5c890 !important;
+  background: rgba(0, 243, 255, 0.1) !important;
+  color: var(--neon-cyan) !important;
   font-weight: 600;
-  box-shadow: inset 3px 0 0 #e5c890;
+  box-shadow: inset 3px 0 0 var(--neon-cyan);
 }
 
 .nav-icon {
@@ -265,19 +270,20 @@ const searchQuery = ref('');
   flex: 1;
   overflow-y: auto;
   padding: 40px;
-  background-color: #1e1e2e; /* Contenido principal tiene fondo neutro oscuro */
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
 }
 
 .content-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 6px;
 }
 
 .content-sub {
   font-size: 0.85rem;
-  color: #a6adc8;
+  color: var(--text-secondary);
   margin-bottom: 24px;
 }
 
@@ -296,21 +302,26 @@ const searchQuery = ref('');
 .fallback-icon {
   width: 56px;
   height: 56px;
-  color: rgba(229, 200, 144, 0.15);
+  color: rgba(0, 243, 255, 0.15);
   margin-bottom: 16px;
 }
 
 .fallback-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #e5c890;
+  color: var(--neon-cyan);
   margin-bottom: 8px;
 }
 
 .fallback-desc {
   font-size: 0.82rem;
-  color: #a6adc8;
+  color: var(--text-secondary);
   max-width: 380px;
   line-height: 1.5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

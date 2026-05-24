@@ -1,14 +1,27 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useOSStore } from '@/stores/osStore';
 
 export const useConfigStore = defineStore('config', () => {
   const osStore = useOSStore();
 
   // ---- Estados ----
-  const theme = ref<'dark' | 'light'>('dark');
+  // Recuperar el tema guardado en localStorage o usar 'dark' por defecto
+  const savedTheme = localStorage.getItem('antorui-theme') as 'dark' | 'light';
+  const theme = ref<'dark' | 'light'>(savedTheme || 'dark');
+  
   const wallpaperIndex = ref(0);
   const blurEnabled = ref(false);
+
+  // ---- Watchers reactivos en el Store ----
+  watch(
+    theme,
+    (newTheme) => {
+      localStorage.setItem('antorui-theme', newTheme);
+      document.documentElement.setAttribute('data-theme', newTheme);
+    },
+    { immediate: true }
+  );
 
   // ---- Getters ----
   // Retorna las imágenes cargadas en la carpeta virtual de Imágenes
@@ -30,7 +43,10 @@ export const useConfigStore = defineStore('config', () => {
   // ---- Acciones ----
   function setTheme(newTheme: 'dark' | 'light') {
     theme.value = newTheme;
-    document.documentElement.setAttribute('data-theme', newTheme);
+  }
+
+  function toggleTheme() {
+    theme.value = theme.value === 'dark' ? 'light' : 'dark';
   }
 
   function setWallpaper(url: string) {
@@ -40,6 +56,7 @@ export const useConfigStore = defineStore('config', () => {
     }
   }
 
+  // Desenfocar fondo general
   function toggleBlur() {
     blurEnabled.value = !blurEnabled.value;
   }
@@ -65,6 +82,7 @@ export const useConfigStore = defineStore('config', () => {
     systemWallpapers,
     wallpaper,
     setTheme,
+    toggleTheme,
     setWallpaper,
     toggleBlur,
     nextWallpaper,

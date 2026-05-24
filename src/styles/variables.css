@@ -1,16 +1,16 @@
 :root {
-  /* Paleta Base Oscura */
-  --bg-dark: #050505;
-  --surface-base: #111111;
+  /* Paleta Base Oscura (Modo Oscuro Gamer Neón por defecto) */
+  --bg-primary: #050505;
+  --bg-secondary: #111111;
+  --text-primary: #ffffff;
+  --text-secondary: #a6adc8;
+  --glass-bg: rgba(17, 17, 17, 0.6);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
 
   /* Colores Neón Primarios */
   --neon-cyan: #00f3ff;
   --neon-magenta: #ff00ff;
   --neon-green: #00ff66;
-
-  /* Efectos Glassmorphism (Cristal) y Bordes */
-  --glass-bg: rgba(17, 17, 17, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.1);
 
   /* Sombras Proyectadas (Glow Effects) */
   --glow-cyan: 0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3);
@@ -19,4 +19,24 @@
 
   /* Tipografía Base */
   --font-family-base: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.light-theme {
+  /* Paleta GNOME Light */
+  --bg-primary: #fafafa;
+  --bg-secondary: #f3f4f6;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: 1px solid rgba(0, 0, 0, 0.1);
+
+  /* Ajuste leve de brillo en acentos Neón para fondos claros, manteniendo el look gamer futurista */
+  --neon-cyan: #007c91;      /* Cian más profundo y de excelente legibilidad en blanco */
+  --neon-magenta: #b800b8;   /* Magenta vibrante de alto contraste */
+  --neon-green: #008f39;     /* Verde cibernético adaptado */
+
+  /* Sombras sutiles y elegantes para modo claro */
+  --glow-cyan: 0 0 8px rgba(0, 124, 145, 0.2);
+  --glow-magenta: 0 0 8px rgba(184, 0, 184, 0.2);
+  --glow-green: 0 0 8px rgba(0, 143, 57, 0.2);
 }

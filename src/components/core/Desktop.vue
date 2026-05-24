@@ -1,6 +1,7 @@
 <template>
   <div
     class="desktop-environment"
+    :class="{ 'light-theme': configStore.theme === 'light' }"
     :style="{ backgroundImage: `url(${configStore.wallpaper})` }"
   >
     <!-- Capa de difuminado reactiva con transiciones ultra suaves -->

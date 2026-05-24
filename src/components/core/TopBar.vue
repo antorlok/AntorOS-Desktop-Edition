@@ -99,13 +99,14 @@ const ramUsagePercent = computed(() => Math.round(osStore.stats.ram_usage));
   height: 32px;
   width: 100%;
   padding: 0 16px;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+  border-bottom: var(--glass-border);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
   pointer-events: auto; /* Reactivar clicks en la barra */
   user-select: none;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .top-bar-left, .top-bar-right {
@@ -124,7 +125,7 @@ const ramUsagePercent = computed(() => Math.round(osStore.stats.ram_usage));
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 600;
@@ -134,18 +135,18 @@ const ramUsagePercent = computed(() => Math.round(osStore.stats.ram_usage));
 
 .activities-btn:hover {
   background: rgba(34, 211, 238, 0.08);
-  color: #22d3ee;
-  border-color: rgba(34, 211, 238, 0.3);
-  text-shadow: 0 0 10px #22d3ee;
+  color: var(--neon-cyan);
+  border-color: var(--neon-cyan);
+  text-shadow: var(--glow-cyan);
   box-shadow: 0 0 12px rgba(34, 211, 238, 0.1);
 }
 
 .activities-active {
   background: rgba(34, 211, 238, 0.15) !important;
-  color: #22d3ee !important;
-  border-color: #22d3ee !important;
+  color: var(--neon-cyan) !important;
+  border-color: var(--neon-cyan) !important;
   box-shadow: 0 0 15px rgba(34, 211, 238, 0.25);
-  text-shadow: 0 0 10px #22d3ee;
+  text-shadow: var(--glow-cyan);
 }
 
 .activities-icon {
@@ -162,10 +163,10 @@ const ramUsagePercent = computed(() => Math.round(osStore.stats.ram_usage));
 .system-time {
   font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
   letter-spacing: 0.5px;
   text-transform: capitalize;
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
 }
 
 /* Chips de Telemetría */
@@ -173,8 +174,8 @@ const ramUsagePercent = computed(() => Math.round(osStore.stats.ram_usage));
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
+  border: var(--glass-border);
   border-radius: 6px;
   padding: 2px 8px;
   height: 22px;
@@ -183,13 +184,13 @@ const ramUsagePercent = computed(() => Math.round(osStore.stats.ram_usage));
 
 .stat-chip:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--neon-cyan);
 }
 
 .stat-icon {
   width: 12px;
   height: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
   transition: color 0.2s ease;
 }
 
@@ -197,7 +198,7 @@ const ramUsagePercent = computed(() => Math.round(osStore.stats.ram_usage));
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.75rem;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   width: 28px;
   text-align: right;
 }
