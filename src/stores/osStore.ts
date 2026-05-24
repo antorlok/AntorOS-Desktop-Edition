@@ -180,6 +180,35 @@ export const useOSStore = defineStore('os', () => {
     }
   }
 
+  // --- Menú Contextual Global de Aplicaciones ---
+  const contextMenu = ref<{
+    isOpen: boolean;
+    x: number;
+    y: number;
+    app: { id: string; name: string; title: string; icon: any } | null;
+    type: 'dock' | 'launcher';
+  }>({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    app: null,
+    type: 'launcher',
+  });
+
+  function openContextMenu(x: number, y: number, app: any, type: 'dock' | 'launcher') {
+    contextMenu.value = {
+      isOpen: true,
+      x,
+      y,
+      app,
+      type,
+    };
+  }
+
+  function closeContextMenu() {
+    contextMenu.value.isOpen = false;
+  }
+
   return {
     // State
     windows,
@@ -189,6 +218,7 @@ export const useOSStore = defineStore('os', () => {
     isAuthenticated,
     isLauncherOpen,
     fileSystem,
+    contextMenu,
     // Getters
     activeWindow,
     visibleWindows,
@@ -203,5 +233,7 @@ export const useOSStore = defineStore('os', () => {
     unlock,
     toggleLauncher,
     addFileToFolder,
+    openContextMenu,
+    closeContextMenu,
   };
 });

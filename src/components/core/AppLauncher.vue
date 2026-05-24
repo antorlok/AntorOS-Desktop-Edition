@@ -28,6 +28,7 @@
             :key="app.id"
             class="app-card"
             @click="launchApp(app)"
+            @contextmenu.prevent.stop="handleRightClick($event, app)"
           >
             <div class="app-icon-container">
               <component :is="app.icon" class="app-icon" />
@@ -83,6 +84,11 @@ function launchApp(app: AppRegistryEntry) {
     osStore.openWindow(app);
   }
   closeLauncher();
+}
+
+function handleRightClick(event: MouseEvent, app: AppRegistryEntry) {
+  event.stopPropagation();
+  osStore.openContextMenu(event.clientX, event.clientY, app, 'launcher');
 }
 
 // Foco automático del buscador al abrir el menú de aplicaciones

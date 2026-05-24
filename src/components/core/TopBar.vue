@@ -1,6 +1,6 @@
 <template>
   <header class="shell-top-bar" aria-label="Barra superior del sistema">
-    <!-- Izquierda: Botón de Actividades -->
+    <!-- Izquierda: Botón de Aplicaciones -->
     <div class="top-bar-left">
       <button
         id="activities-btn"
@@ -10,8 +10,8 @@
         aria-haspopup="true"
         :aria-expanded="osStore.isLauncherOpen"
       >
-        <ActivityIcon class="activities-icon" />
-        <span class="activities-text">Actividades</span>
+        <LayoutGridIcon class="activities-icon" />
+        <span class="activities-text">Aplicaciones</span>
       </button>
     </div>
 
@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useOSStore } from '@/stores/osStore';
-import { Activity as ActivityIcon, Cpu as CpuIcon, Layers as LayersIcon } from 'lucide-vue-next';
+import { LayoutGrid as LayoutGridIcon, Cpu as CpuIcon, Layers as LayersIcon } from 'lucide-vue-next';
 
 const osStore = useOSStore();
 

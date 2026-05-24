@@ -1,42 +1,39 @@
 <template>
   <div class="taskbar-container">
-    <!-- Lanzadores de Aplicaciones (Izquierda/Centro) -->
+    <!-- Lanzadores de Aplicaciones Dinámicos (Anclados + Abiertos) -->
     <div class="dock-launchers" role="toolbar" aria-label="Acceso rápido a aplicaciones">
       <button 
-        v-for="app in SYSTEM_APPS" 
+        v-for="app in dockApps" 
         :key="app.id"
         class="launcher-icon"
         :title="app.title"
         @click="launchApp(app)"
+        @contextmenu.prevent.stop="handleRightClick($event, app)"
       >
         <component :is="app.icon" class="icon-svg" />
         <div class="launcher-dot" :class="{ 'is-running': isAppRunning(app.name) }"></div>
       </button>
     </div>
-
-    <!-- Separador Cyberpunk -->
-    <div class="dock-divider"></div>
-
-    <!-- HUD de Telemetría (Derecha) -->
-    <div class="telemetry-hud" aria-label="Estadísticas de hardware">
-      <span class="hud-item cpu-hud">
-        CPU <span class="hud-value">{{ osStore.stats.cpu_usage.toFixed(1).padStart(5, '0') }}%</span>
-      </span>
-      <span class="hud-separator">|</span>
-      <span class="hud-item ram-hud">
-        RAM <span class="hud-value">{{ osStore.stats.ram_usage.toFixed(1).padStart(5, '0') }}%</span>
-      </span>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useOSStore } from '@/stores/osStore';
+import { useConfigStore } from '@/stores/configStore';
 import { SYSTEM_APPS, type AppRegistryEntry } from '@/registry/apps';
 
 const osStore = useOSStore();
+const configStore = useConfigStore();
 
 let clickTimeout: ReturnType<typeof setTimeout> | null = null;
+
+// Determinar dinámicamente qué aplicaciones se renderizan en el Dock (ancladas O ejecutándose)
+const dockApps = computed(() => {
+  return SYSTEM_APPS.filter((app) => 
+    configStore.isAppPinned(app.id) || osStore.windows.some((w) => w.appName === app.name)
+  );
+});
 
 function launchApp(app: AppRegistryEntry) {
   if (clickTimeout) {
@@ -66,6 +63,14 @@ function launchApp(app: AppRegistryEntry) {
 }
 
 /**
+ * Capturar click derecho sobre los iconos del Dock para desplegar el Menú Contextual
+ */
+function handleRightClick(event: MouseEvent, app: AppRegistryEntry) {
+  event.stopPropagation();
+  osStore.openContextMenu(event.clientX, event.clientY, app, 'dock');
+}
+
+/**
  * Retorna true si hay alguna ventana abierta con el appName especificado.
  * Esto permite encender un micro-indicador de ejecución debajo del icono.
  */
@@ -83,7 +88,6 @@ function isAppRunning(appName: string): boolean {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 20px;
   padding: 8px 24px;
   
   /* Glassmorphism Cyber-Gamer Premium */
@@ -124,8 +128,8 @@ function isAppRunning(appName: string): boolean {
   align-items: center;
   width: 56px;
   height: 56px;
-  background: transparent; /* Quitado el recuadro gris de fondo */
-  border: none; /* Sin bordes grises */
+  background: transparent;
+  border: none;
   cursor: pointer;
   color: var(--text-secondary);
   outline: none;
@@ -133,7 +137,7 @@ function isAppRunning(appName: string): boolean {
 }
 
 .icon-svg {
-  width: 28px; /* Iconos más grandes como se solicitó */
+  width: 28px;
   height: 28px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -167,56 +171,5 @@ function isAppRunning(appName: string): boolean {
 .launcher-icon:hover .launcher-dot.is-running {
   background: var(--neon-magenta);
   box-shadow: var(--glow-magenta);
-}
-
-/* Separador de Dock y HUD */
-.dock-divider {
-  width: 1px;
-  height: 36px;
-  background: var(--glass-border);
-  border-radius: 1px;
-  transition: background 0.3s ease;
-}
-
-.taskbar-container:hover .dock-divider {
-  background: var(--neon-magenta);
-  opacity: 0.4;
-}
-
-/* HUD de Telemetría */
-.telemetry-hud {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-.hud-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.cpu-hud {
-  color: var(--neon-cyan);
-  text-shadow: var(--glow-cyan);
-}
-
-.ram-hud {
-  color: var(--neon-magenta);
-  text-shadow: var(--glow-magenta);
-}
-
-.hud-value {
-  font-weight: bold;
-  display: inline-block;
-}
-
-.hud-separator {
-  color: var(--glass-border);
 }
 </style>

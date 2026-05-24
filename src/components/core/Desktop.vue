@@ -28,6 +28,9 @@
     <Transition name="dock-fade">
       <Taskbar v-if="configStore.dockEnabled" />
     </Transition>
+
+    <!-- Menú Contextual Global de Aplicaciones (Cyber-Neon / Adaptable) -->
+    <ContextMenu />
   </div>
 </template>
 
@@ -38,6 +41,7 @@ import { useConfigStore } from '@/stores/configStore';
 import Shell from '@/components/core/Shell.vue';
 import WindowFrame from '@/components/core/WindowFrame.vue';
 import Taskbar from '@/components/core/Taskbar.vue';
+import ContextMenu from '@/components/core/ContextMenu.vue';
 
 const osStore = useOSStore();
 const configStore = useConfigStore();

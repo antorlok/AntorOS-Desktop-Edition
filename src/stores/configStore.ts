@@ -17,6 +17,12 @@ export const useConfigStore = defineStore('config', () => {
   const wallpaperIndex = ref(0);
   const blurEnabled = ref(false);
 
+  // --- Dock: Aplicaciones Ancladas Reactivas ---
+  const savedPinned = localStorage.getItem('antorui-pinned-apps');
+  const pinnedAppIds = ref<string[]>(
+    savedPinned ? JSON.parse(savedPinned) : ['browser', 'terminal', 'settings', 'monitor', 'files']
+  );
+
   // ---- Watchers reactivos en el Store ----
   watch(
     theme,
@@ -32,6 +38,14 @@ export const useConfigStore = defineStore('config', () => {
     (newVal) => {
       localStorage.setItem('antorui-dock-enabled', String(newVal));
     }
+  );
+
+  watch(
+    pinnedAppIds,
+    (newVal) => {
+      localStorage.setItem('antorui-pinned-apps', JSON.stringify(newVal));
+    },
+    { deep: true }
   );
 
   // ---- Getters ----
@@ -86,6 +100,21 @@ export const useConfigStore = defineStore('config', () => {
     }
   }
 
+  // Acciones para Anclar / Desanclar del Dock
+  function pinApp(appId: string) {
+    if (!pinnedAppIds.value.includes(appId)) {
+      pinnedAppIds.value.push(appId);
+    }
+  }
+
+  function unpinApp(appId: string) {
+    pinnedAppIds.value = pinnedAppIds.value.filter((id) => id !== appId);
+  }
+
+  function isAppPinned(appId: string): boolean {
+    return pinnedAppIds.value.includes(appId);
+  }
+
   return {
     theme,
     dockEnabled,
@@ -93,11 +122,15 @@ export const useConfigStore = defineStore('config', () => {
     blurEnabled,
     systemWallpapers,
     wallpaper,
+    pinnedAppIds,
     setTheme,
     toggleTheme,
     setWallpaper,
     toggleBlur,
     nextWallpaper,
-    prevWallpaper
+    prevWallpaper,
+    pinApp,
+    unpinApp,
+    isAppPinned
   };
 });
