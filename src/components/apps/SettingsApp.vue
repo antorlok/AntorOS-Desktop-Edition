@@ -60,7 +60,7 @@
           @click="activeTab = 'theme'"
         >
           <PaletteIcon class="nav-icon" />
-          <span>Tema y colores</span>
+          <span>Personalización</span>
         </button>
 
         <span class="menu-label">Dispositivo</span>
@@ -92,10 +92,10 @@
         <WallpaperSettings />
       </div>
 
-      <!-- PESTAÑA COMPLETA: TEMA Y COLORES -->
+      <!-- PESTAÑA COMPLETA: PERSONALIZACIÓN -->
       <div v-else-if="activeTab === 'theme'">
-        <h2 class="content-title">Tema y Colores</h2>
-        <p class="content-sub">Elige el esquema de colores de la interfaz gráfica y los paneles del sistema.</p>
+        <h2 class="content-title">Personalización</h2>
+        <p class="content-sub">Elige el esquema de colores, efectos visuales y paneles del entorno del sistema.</p>
         <ThemeSettings />
       </div>
 

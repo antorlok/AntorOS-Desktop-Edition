@@ -25,7 +25,9 @@
     </div>
 
     <!-- Taskbar Centralizada (Dock + HUD) -->
-    <Taskbar />
+    <Transition name="dock-fade">
+      <Taskbar v-if="configStore.dockEnabled" />
+    </Transition>
   </div>
 </template>
 
@@ -98,6 +100,18 @@ function getAppComponent(appName: string): Component | string {
   bottom: 0;
   overflow: hidden;
   z-index: 2;
+}
+
+/* Transición fluida cyberpunk para ocultar/mostrar el Dock inferior */
+.dock-fade-enter-active,
+.dock-fade-leave-active {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dock-fade-enter-from,
+.dock-fade-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 28px) scale(0.94);
 }
 </style>
 

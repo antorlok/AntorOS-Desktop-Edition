@@ -10,6 +10,10 @@ export const useConfigStore = defineStore('config', () => {
   const savedTheme = localStorage.getItem('antorui-theme') as 'dark' | 'light';
   const theme = ref<'dark' | 'light'>(savedTheme || 'dark');
   
+  // Recuperar el estado del Dock o habilitarlo por defecto (true)
+  const savedDock = localStorage.getItem('antorui-dock-enabled');
+  const dockEnabled = ref(savedDock === null ? true : savedDock === 'true');
+  
   const wallpaperIndex = ref(0);
   const blurEnabled = ref(false);
 
@@ -21,6 +25,13 @@ export const useConfigStore = defineStore('config', () => {
       document.documentElement.setAttribute('data-theme', newTheme);
     },
     { immediate: true }
+  );
+
+  watch(
+    dockEnabled,
+    (newVal) => {
+      localStorage.setItem('antorui-dock-enabled', String(newVal));
+    }
   );
 
   // ---- Getters ----
@@ -77,6 +88,7 @@ export const useConfigStore = defineStore('config', () => {
 
   return {
     theme,
+    dockEnabled,
     wallpaperIndex,
     blurEnabled,
     systemWallpapers,

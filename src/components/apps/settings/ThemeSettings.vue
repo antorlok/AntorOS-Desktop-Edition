@@ -1,7 +1,7 @@
 <template>
   <div class="settings-section">
-    <!-- PANEL DE APARIENCIA DEL SISTEMA -->
-    <SettingCard title="Apariencia del Sistema" :icon="PaletteIcon">
+    <!-- PANEL DE PERSONALIZACIÓN DEL SISTEMA -->
+    <SettingCard title="Personalización" :icon="PaletteIcon">
       <div class="setting-rows-list">
         <!-- Fila: Modo Claro -->
         <div class="setting-row">
@@ -10,6 +10,17 @@
             <span class="row-sub">Utilizar un esquema de colores claros para ventanas y paneles (Estilo GNOME Light).</span>
           </div>
           <ToggleSwitch v-model="isLightTheme" />
+        </div>
+
+        <div class="row-divider"></div>
+
+        <!-- Fila: Mostrar Dock -->
+        <div class="setting-row">
+          <div class="row-info">
+            <span class="row-title">Mostrar Dock de Aplicaciones</span>
+            <span class="row-sub">Mantener la barra inferior de accesos rápidos visible en el escritorio central.</span>
+          </div>
+          <ToggleSwitch v-model="configStore.dockEnabled" />
         </div>
       </div>
     </SettingCard>
@@ -25,7 +36,7 @@ import { Palette as PaletteIcon } from 'lucide-vue-next';
 
 const configStore = useConfigStore();
 
-// Getter y setter bidireccionales computados sobre el store de Pinia
+// Getter y setter bidireccionales computados sobre el store de Pinia para el tema
 const isLightTheme = computed({
   get() {
     return configStore.theme === 'light';
@@ -77,5 +88,12 @@ const isLightTheme = computed({
 .row-sub {
   font-size: 0.75rem;
   color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.row-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 6px 0;
 }
 </style>

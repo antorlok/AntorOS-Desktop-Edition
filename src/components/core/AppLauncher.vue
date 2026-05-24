@@ -73,8 +73,15 @@ function closeLauncher() {
 }
 
 function launchApp(app: AppRegistryEntry) {
-  // openWindow ahora soporta recibir el objeto completo 'app' de forma directa y elegante
-  osStore.openWindow(app);
+  // Comprobamos si la aplicación ya se está ejecutando en el sistema
+  const runningApp = osStore.windows.find((w) => w.appName === app.name);
+  if (runningApp) {
+    // Si ya está abierta, enfocamos y desminimizamos la ventana existente
+    osStore.focusWindow(runningApp.id);
+  } else {
+    // Si no está abierta, abrimos una nueva
+    osStore.openWindow(app);
+  }
   closeLauncher();
 }
 

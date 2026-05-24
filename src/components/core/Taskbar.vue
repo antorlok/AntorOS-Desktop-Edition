@@ -36,9 +36,33 @@ import { SYSTEM_APPS, type AppRegistryEntry } from '@/registry/apps';
 
 const osStore = useOSStore();
 
+let clickTimeout: ReturnType<typeof setTimeout> | null = null;
+
 function launchApp(app: AppRegistryEntry) {
-  // openWindow ahora acepta el objeto completo de forma nativa e integrada
-  osStore.openWindow(app);
+  if (clickTimeout) {
+    // Si ya existe un timeout activo, significa que es el segundo click (Doble Click)
+    clearTimeout(clickTimeout);
+    clickTimeout = null;
+    
+    // Doble click: Abrir una nueva ventana incondicionalmente
+    osStore.openWindow(app);
+  } else {
+    // Es el primer click: Esperamos 250ms para ver si hay un segundo click
+    clickTimeout = setTimeout(() => {
+      clickTimeout = null;
+      
+      // Click simple:
+      // Comprobamos si la aplicación ya tiene alguna ventana abierta en el sistema
+      const runningApp = osStore.windows.find((w) => w.appName === app.name);
+      if (runningApp) {
+        // Enfocamos y desminimizamos la ventana existente
+        osStore.focusWindow(runningApp.id);
+      } else {
+        // Si no está abierta, creamos una nueva instancia
+        osStore.openWindow(app);
+      }
+    }, 250);
+  }
 }
 
 /**
