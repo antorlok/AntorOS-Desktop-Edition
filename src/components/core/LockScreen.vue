@@ -7,11 +7,12 @@
     <div class="auth-panel">
       <!-- Avatar de usuario -->
       <div class="avatar-wrapper">
-        <UserIcon class="avatar-icon" />
+        <img v-if="userStore.avatarUrl" :src="userStore.avatarUrl" class="avatar-img" alt="Avatar de Usuario" />
+        <UserIcon v-else class="avatar-icon" />
         <div class="avatar-glow" aria-hidden="true"></div>
       </div>
 
-      <h2 class="username">AntorOS</h2>
+      <h2 class="username">{{ userStore.username }}</h2>
       <p class="subtitle">Ingresa tu contraseña para continuar</p>
 
       <!-- Campo de contraseña con borde neón inferior -->
@@ -53,11 +54,10 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { User as UserIcon, Lock as LockIcon, Unlock as UnlockIcon } from 'lucide-vue-next';
 import { useOSStore } from '@/stores/osStore';
-
-// ---- Credencial hardcodeada para fase de desarrollo ----
-const DEV_PASSWORD = '1234';
+import { useUserStore } from '@/stores/userStore';
 
 const osStore = useOSStore();
+const userStore = useUserStore();
 const inputRef = ref<HTMLInputElement | null>(null);
 const password = ref('');
 const hasError = ref(false);
@@ -82,9 +82,9 @@ onMounted(() => {
 
 onUnmounted(() => clearInterval(clockInterval));
 
-// ---- Lógica de autenticación ----
+// ---- Lógica de autenticación reactiva ----
 function handleUnlock() {
-  if (password.value === DEV_PASSWORD) {
+  if (password.value === userStore.password) {
     osStore.unlock();
     return;
   }
@@ -168,6 +168,14 @@ function handleUnlock() {
   border: 2px solid rgba(0, 243, 255, 0.4);
   background: rgba(0, 243, 255, 0.05);
   margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .avatar-icon {
@@ -184,6 +192,7 @@ function handleUnlock() {
   border-radius: 50%;
   border: 1px solid rgba(0, 243, 255, 0.2);
   animation: pulse-ring 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
 }
 
 @keyframes pulse-ring {

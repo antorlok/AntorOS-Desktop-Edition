@@ -2,17 +2,17 @@
   <div class="settings-app-container">
     <!-- SIDEBAR DE NAVEGACIÓN (IZQUIERDA) -->
     <aside class="settings-sidebar">
-      <!-- Perfil de Usuario Ficticio -->
+      <!-- Perfil de Usuario Dinámico -->
       <div class="user-profile-card">
         <div class="avatar-glow">
           <img
-            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
-            alt="Avatar de antorlok"
+            :src="userStore.avatarUrl"
+            :alt="`Avatar de ${userStore.username}`"
             class="user-avatar"
           />
         </div>
         <div class="user-info">
-          <span class="username">antorlok</span>
+          <span class="username">{{ userStore.username }}</span>
           <span class="user-role">Administrador del Sistema</span>
         </div>
       </div>
@@ -31,6 +31,17 @@
 
       <!-- Menú de Navegación por Categorías -->
       <nav class="categories-nav">
+        <span class="menu-label">Sistema</span>
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ 'nav-item-active': activeTab === 'account' }"
+          @click="activeTab = 'account'"
+        >
+          <UserIcon class="nav-icon" />
+          <span>Cuenta de Usuario</span>
+        </button>
+
         <span class="menu-label">Personalización</span>
         <button
           type="button"
@@ -67,8 +78,15 @@
 
     <!-- ÁREA DE CONTENIDO DINÁMICO (DERECHA) -->
     <main class="settings-main-content">
+      <!-- PESTAÑA: CUENTA DE USUARIO -->
+      <div v-if="activeTab === 'account'">
+        <h2 class="content-title">Cuenta de Usuario</h2>
+        <p class="content-sub">Administra tu perfil, avatar e información de seguridad del sistema.</p>
+        <UserSettings />
+      </div>
+
       <!-- PESTAÑA: FONDO DE PANTALLA -->
-      <div v-if="activeTab === 'wallpaper'">
+      <div v-else-if="activeTab === 'wallpaper'">
         <h2 class="content-title">Personalizar Fondo</h2>
         <p class="content-sub">Elige un fondo de pantalla gamer y gestiona la apariencia del escritorio central.</p>
         <WallpaperSettings />
@@ -95,15 +113,20 @@
 import { ref } from 'vue';
 import {
   Search as SearchIcon,
+  User as UserIcon,
   Image as ImageIcon,
   Palette as PaletteIcon,
   Volume2 as Volume2Icon
 } from 'lucide-vue-next';
+import { useUserStore } from '@/stores/userStore';
 import WallpaperSettings from '@/components/apps/settings/WallpaperSettings.vue';
 import ThemeSettings from '@/components/apps/settings/ThemeSettings.vue';
+import UserSettings from '@/components/apps/settings/UserSettings.vue';
+
+const userStore = useUserStore();
 
 // Estado Reactivo de Pestaña Activa
-const activeTab = ref<'wallpaper' | 'theme' | 'sounds'>('wallpaper');
+const activeTab = ref<'account' | 'wallpaper' | 'theme' | 'sounds'>('account');
 const searchQuery = ref('');
 </script>
 
