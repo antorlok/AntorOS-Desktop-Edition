@@ -25,7 +25,7 @@
       </span>
       <span v-if="configStore.showDockCpu && (configStore.showDockRam || configStore.showDockTemp)" class="hud-separator">|</span>
       <span v-if="configStore.showDockRam" class="hud-item ram-hud">
-        RAM <span class="hud-value">{{ osStore.stats.ram_usage.toFixed(1).padStart(5, '0') }}%</span>
+        RAM <span class="hud-value">{{ memoryStore.ramPercentage.toFixed(1).padStart(5, '0') }}%</span>
       </span>
       <span v-if="configStore.showDockRam && configStore.showDockTemp" class="hud-separator">|</span>
       <span v-if="configStore.showDockTemp" class="hud-item temp-hud">
@@ -39,6 +39,7 @@
 import { computed } from 'vue';
 import { useOSStore } from '@/stores/osStore';
 import { useConfigStore } from '@/stores/configStore';
+import { useMemoryStore } from '@/stores/memoryStore';
 import { SYSTEM_APPS, type AppRegistryEntry } from '@/registry/apps';
 
 import { useStoreStore } from '@/stores/storeStore';
@@ -46,6 +47,7 @@ import { useStoreStore } from '@/stores/storeStore';
 const osStore = useOSStore();
 const configStore = useConfigStore();
 const storeStore = useStoreStore();
+const memoryStore = useMemoryStore();
 
 let clickTimeout: ReturnType<typeof setTimeout> | null = null;
 

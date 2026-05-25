@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import type { WindowProcess, HardwareStats } from '@/types/os';
 import { useConfigStore } from '@/stores/configStore';
 import { SYSTEM_APPS } from '@/registry/apps';
+import { useMemoryStore } from '@/stores/memoryStore';
 
 // Offset en cascada para cada nueva ventana
 const CASCADE_OFFSET = 30;
@@ -107,6 +108,18 @@ export const useOSStore = defineStore('os', () => {
       }
     }
 
+    // Comprobar espacio de memoria física (OOM Killer) antes de abrir
+    const memoryStore = useMemoryStore();
+    const appCatalogEntry = SYSTEM_APPS.find((app) => app.name === appName);
+    const appId = appCatalogEntry ? appCatalogEntry.id : appName.toLowerCase().replace('app', '');
+
+    if (!memoryStore.requestMemoryAllocation(appId)) {
+      const displayTitle = windowTitle || appCatalogEntry?.title || appName;
+      alert(`[ALERTA DE SISTEMA: OUT OF MEMORY]\n\nNo hay suficiente memoria RAM libre (8GB máx) para abrir "${displayTitle}".\nPor favor, cierra otras aplicaciones activas para liberar recursos.`);
+      console.error(`[OOM ERROR] Allocation request failed for appId: ${appId}`);
+      return '';
+    }
+
     const id = crypto.randomUUID();
     const cascade = windows.value.length;
 
@@ -130,6 +143,9 @@ export const useOSStore = defineStore('os', () => {
     windows.value.push(process);
     activeWindowId.value = id;
 
+    // Registrar proceso alocado en el gestor de memoria
+    memoryStore.allocateMemory(appId, id);
+
     return id;
   }
 
@@ -152,6 +168,10 @@ export const useOSStore = defineStore('os', () => {
   /** Elimina una ventana del array de procesos */
   function closeWindow(id: string): void {
     windows.value = windows.value.filter((w) => w.id !== id);
+
+    // Liberar memoria del proceso destruido
+    const memoryStore = useMemoryStore();
+    memoryStore.freeMemory(id);
 
     // Re-activar la ventana visible con el zIndex más alto
     if (activeWindowId.value === id) {
@@ -190,7 +210,11 @@ export const useOSStore = defineStore('os', () => {
 
   /** Actualiza las estadísticas de hardware desde el Kernel */
   function updateStats(incoming: HardwareStats): void {
-    stats.value = incoming;
+    const memoryStore = useMemoryStore();
+    stats.value = {
+      ...incoming,
+      ram_usage: memoryStore.ramPercentage
+    };
   }
 
   /** Autentica al usuario y desbloquea el escritorio */

@@ -35,13 +35,18 @@
       </div>
 
       <!-- Indicador de RAM en TopBar -->
-      <div v-if="configStore.showTopbarRam" class="stat-chip ram-chip" title="Uso de RAM">
+      <div 
+        v-if="configStore.showTopbarRam" 
+        class="stat-chip ram-chip" 
+        :class="{ 'ram-danger-blink': memoryStore.ramPercentage > 85 }"
+        :title="`Uso de RAM simulado: ${(memoryStore.usedRAM / 1024).toFixed(1)}GB / 8GB`"
+      >
         <LayersIcon class="stat-chip-icon" />
-        <span class="stat-value">{{ Math.round(osStore.stats.ram_usage) }}%</span>
+        <span class="stat-value ram-text-val">{{ (memoryStore.usedRAM / 1024).toFixed(1) }}GB/8GB</span>
         <div class="stat-progress-bg">
           <div
             class="stat-progress-fill ram-fill"
-            :style="{ width: `${osStore.stats.ram_usage}%` }"
+            :style="{ width: `${memoryStore.ramPercentage}%` }"
           ></div>
         </div>
       </div>
@@ -93,6 +98,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useOSStore } from '@/stores/osStore';
 import { useConfigStore } from '@/stores/configStore';
+import { useMemoryStore } from '@/stores/memoryStore';
 import PowerMenu from '@/components/core/PowerMenu.vue';
 import {
   LayoutGrid as LayoutGridIcon,
@@ -111,6 +117,7 @@ import {
 
 const osStore = useOSStore();
 const configStore = useConfigStore();
+const memoryStore = useMemoryStore();
 
 const showPowerMenu = ref(false);
 
@@ -388,6 +395,27 @@ onUnmounted(() => {
 .ram-chip:hover .stat-chip-icon {
   color: var(--neon-magenta);
   filter: drop-shadow(var(--glow-magenta));
+}
+
+.ram-text-val {
+  width: auto !important;
+  min-width: 65px;
+  text-align: center;
+}
+
+.ram-danger-blink {
+  border-color: var(--neon-magenta) !important;
+  color: var(--neon-magenta) !important;
+  animation: ramBlink 2s infinite !important;
+}
+
+.ram-danger-blink .stat-chip-icon {
+  color: var(--neon-magenta) !important;
+}
+
+@keyframes ramBlink {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 4px var(--neon-magenta)); }
+  50% { opacity: 0.6; }
 }
 
 .temp-chip:hover .stat-chip-icon {

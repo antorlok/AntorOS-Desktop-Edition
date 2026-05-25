@@ -59,17 +59,17 @@
                   cy="50"
                   r="40"
                   stroke-dasharray="251.2"
-                  :stroke-dashoffset="calculateOffset(osStore.stats.ram_usage)"
+                  :stroke-dashoffset="calculateOffset(memoryStore.ramPercentage)"
                 />
               </svg>
               <div class="radial-label ram-label">
-                <span class="value-text">{{ Math.round(osStore.stats.ram_usage) }}%</span>
+                <span class="value-text">{{ Math.round(memoryStore.ramPercentage) }}%</span>
                 <span class="sub-text">Uso</span>
               </div>
             </div>
             <div class="metric-details">
-              <span>Total: 16.0 GB</span>
-              <span>En uso: {{ ((16 * osStore.stats.ram_usage) / 100).toFixed(1) }} GB</span>
+              <span>Total: 8.0 GB</span>
+              <span>En uso: {{ (memoryStore.usedRAM / 1024).toFixed(1) }} GB</span>
             </div>
           </div>
         </div>
@@ -159,9 +159,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useOSStore } from '@/stores/osStore';
+import { useMemoryStore } from '@/stores/memoryStore';
 import { Cpu as CpuIcon, Layers as LayersIcon, HardDrive as HardDriveIcon, Terminal as TerminalIcon } from 'lucide-vue-next';
 
 const osStore = useOSStore();
+const memoryStore = useMemoryStore();
 const activeTab = ref('recursos');
 
 // Definición de pestañas
@@ -205,8 +207,8 @@ const processes = computed(() => {
     { pid: 4210, name: 'cyber-compositor', cpu: baseProcMetrics.value.compositorCpu, ram: baseProcMetrics.value.compositorRam }
   ];
 
-  // Agregar dinámicamente las ventanas reales abiertas
-  osStore.windows.forEach((win, index) => {
+  // Agregar dinámicamente las ventanas reales abiertas con su consumo exacto de memoryStore
+  osStore.windows.forEach((win) => {
     // Creamos un PID determinista a partir de los caracteres del id
     const hash = win.id.split('-').reduce((acc, part) => acc + parseInt(part, 16) || 0, 0);
     const pid = 5000 + (Math.abs(hash) % 4000);
@@ -215,15 +217,18 @@ const processes = computed(() => {
     if (!windowMetrics.value[win.id]) {
       windowMetrics.value[win.id] = {
         cpu: 1.0 + Math.random() * 3.0,
-        ram: 45.0 + Math.random() * 60.0
+        ram: 0 // Se leerá del memoryStore
       };
     }
+
+    const memProc = memoryStore.activeProcesses.find((p) => p.pid === win.id);
+    const ramConsumption = memProc ? memProc.ram : 200;
     
     list.push({
       pid,
       name: `${win.title} (${win.appName})`,
       cpu: windowMetrics.value[win.id].cpu,
-      ram: windowMetrics.value[win.id].ram
+      ram: ramConsumption
     });
   });
 

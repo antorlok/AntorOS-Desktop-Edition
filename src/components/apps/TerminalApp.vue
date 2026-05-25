@@ -12,6 +12,7 @@ import { useStoreStore } from '@/stores/storeStore';
 import { useOSStore } from '@/stores/osStore';
 import { useUserStore } from '@/stores/userStore';
 import { useUpdateStore } from '@/stores/updateStore';
+import { useMemoryStore } from '@/stores/memoryStore';
 import { SYSTEM_APPS } from '@/registry/apps';
 import 'xterm/css/xterm.css';
 
@@ -22,6 +23,7 @@ const storeStore = useStoreStore();
 const osStore = useOSStore();
 const userStore = useUserStore();
 const updateStore = useUpdateStore();
+const memoryStore = useMemoryStore();
 
 // Instancias globales del terminal
 let term: Terminal | null = null;
@@ -205,7 +207,7 @@ function processCommand(cmd: string): void {
   if (mainCommand === 'fastfetch') {
     const uptime = getUptime();
     const installedCount = storeStore.installedAppIds.length;
-    const ramVal = osStore.stats.ram_usage.toFixed(1);
+    const usedGB = (memoryStore.usedRAM / 1024).toFixed(1);
 
     // Arte ASCII del felino cyberpunk y telemetría estructurada con estilos ANSI
     const output = [
@@ -218,7 +220,7 @@ function processCommand(cmd: string): void {
       '               \x1b[1;37mShell:\x1b[0m antor-shell',
       '               \x1b[1;37mCPU:\x1b[0m AMD Ryzen 7 7735HS',
       '               \x1b[1;37mGPU:\x1b[0m NVIDIA GeForce RTX 4060 Laptop GPU',
-      `               \x1b[1;37mMemory:\x1b[0m ${ramVal}GB / 32GB`,
+      `               \x1b[1;37mMemory:\x1b[0m ${usedGB}GB / 8.0GB`,
       '\r\n'
     ].join('\r\n');
 

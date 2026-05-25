@@ -291,12 +291,13 @@ onUnmounted(() => {
   align-items: center;
 }
 
-/* CRT Viewfinder */
 .camera-viewfinder {
   position: relative;
   width: 100%;
   height: 100%;
-  max-height: 270px;
+  max-width: 960px;
+  max-height: 100%;
+  aspect-ratio: 4 / 3;
   background: #020617;
   border: 1px solid rgba(217, 70, 239, 0.3);
   border-radius: 12px;
