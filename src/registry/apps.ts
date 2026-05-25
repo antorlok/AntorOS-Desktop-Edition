@@ -16,6 +16,7 @@ import {
   Music,
   Code,
   Gauge,
+  Gamepad2,
   type LucideIcon
 } from 'lucide-vue-next';
 
@@ -237,5 +238,29 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     description: 'Herramienta de pruebas de rendimiento extremo del kernel.',
     developer: 'antorlok Labs',
     size: '30 MB'
+  },
+  {
+    id: 'tictactoe',
+    name: 'TicTacToeApp',
+    title: 'Cyber Toe',
+    icon: Gamepad2,
+    defaultWidth: 400,
+    defaultHeight: 520,
+    isSystemEssential: false,
+    description: 'Juego de 3 en raya con lógica de colisión y estética neón.',
+    developer: 'Antorlok Games',
+    size: '1.2 MB'
+  },
+  {
+    id: 'snake',
+    name: 'SnakeApp',
+    title: 'Neon Snake',
+    icon: Gamepad2,
+    defaultWidth: 500,
+    defaultHeight: 620,
+    isSystemEssential: false,
+    description: 'El clásico juego de la serpiente renderizado en tiempo real.',
+    developer: 'Antorlok Games',
+    size: '2.5 MB'
   }
 ];

@@ -11,6 +11,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import { useStoreStore } from '@/stores/storeStore';
 import { useOSStore } from '@/stores/osStore';
 import { useUserStore } from '@/stores/userStore';
+import { SYSTEM_APPS } from '@/registry/apps';
 import 'xterm/css/xterm.css';
 
 // Referencia al contenedor DOM del terminal
@@ -136,6 +137,37 @@ function handlePasswordSubmit(): void {
 }
 
 /**
+ * Busca de forma tolerante una aplicación por su ID, título o nombre de componente.
+ * Permite manejar nombres con espacios o mayúsculas/minúsculas de manera flexible.
+ */
+function findAppByQuery(query: string): string | null {
+  if (!query) return null;
+  const q = query.trim().toLowerCase();
+  
+  // 1. Coincidencia exacta de ID
+  let match = SYSTEM_APPS.find((app) => app.id.toLowerCase() === q);
+  if (match) return match.id;
+  
+  // 2. Coincidencia exacta de Título
+  match = SYSTEM_APPS.find((app) => app.title.toLowerCase() === q);
+  if (match) return match.id;
+
+  // 3. Coincidencia exacta de Nombre de Componente
+  match = SYSTEM_APPS.find((app) => app.name.toLowerCase() === q);
+  if (match) return match.id;
+
+  // 4. Coincidencia parcial de Título (e.g. "snake" en "Neon Snake")
+  match = SYSTEM_APPS.find((app) => app.title.toLowerCase().includes(q));
+  if (match) return match.id;
+
+  // 5. Coincidencia parcial de ID
+  match = SYSTEM_APPS.find((app) => app.id.toLowerCase().includes(q));
+  if (match) return match.id;
+
+  return null;
+}
+
+/**
  * Procesa los comandos ingresados por el usuario.
  * Discierne entre comandos emulados locales (clear, fastfetch, antpac)
  * y comandos reales que deben direccionarse a la Pseudo-Terminal (PTY) de Go.
@@ -196,7 +228,7 @@ function processCommand(cmd: string): void {
   // --- Comando Emulado: antpac (Package Manager) ---
   if (mainCommand === 'antpac') {
     const action = parts[cmdIndex + 1];
-    const targetApp = parts[cmdIndex + 2];
+    const targetQuery = parts.slice(cmdIndex + 2).join(' ');
 
     if (!action) {
       term?.write('\r\nUsage: antpac [install|remove|list]\r\n');
@@ -222,13 +254,21 @@ function processCommand(cmd: string): void {
     // Instalación o desinstalación requiere root (sudo)
     if (action === 'install' || action === 'remove') {
       if (!hasSudo) {
-        term?.write(`\r\n\x1b[31mError: Este comando requiere privilegios de superusuario (root).\r\nPor favor, intente con: "sudo antpac ${action} ${targetApp || '<app_id>'}"\x1b[0m\r\n\r\n`);
+        term?.write(`\r\n\x1b[31mError: Este comando requiere privilegios de superusuario (root).\r\nPor favor, intente con: "sudo antpac ${action} ${targetQuery || '<app_id>'}"\x1b[0m\r\n\r\n`);
         term?.write(prompt);
         return;
       }
 
-      if (!targetApp) {
+      if (!targetQuery) {
         term?.write(`\r\nError: Debes especificar el ID de la aplicación. Ej: sudo antpac ${action} neonplayer\r\n\r\n`);
+        term?.write(prompt);
+        return;
+      }
+
+      const targetApp = findAppByQuery(targetQuery);
+
+      if (!targetApp) {
+        term?.write(`\r\n\x1b[31mError: La aplicación "${targetQuery}" no existe en el catálogo.\x1b[0m\r\n\r\n`);
         term?.write(prompt);
         return;
       }

@@ -71,6 +71,8 @@ const appRegistry: Record<string, Component> = {
   NeonPlayerApp: defineAsyncComponent(() => import('@/components/apps/NeonPlayerApp.vue')),
   CyberCodeApp: defineAsyncComponent(() => import('@/components/apps/CyberCodeApp.vue')),
   SysBenchApp: defineAsyncComponent(() => import('@/components/apps/SysBenchApp.vue')),
+  TicTacToeApp: defineAsyncComponent(() => import('../apps/TicTacToeApp.vue')),
+  SnakeApp: defineAsyncComponent(() => import('../apps/SnakeApp.vue')),
 };
 
 /**
