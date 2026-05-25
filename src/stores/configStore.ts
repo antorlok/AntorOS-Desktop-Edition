@@ -135,7 +135,7 @@ export const useConfigStore = defineStore('config', () => {
   }
 
   // --- Configuración: Navegación de Pestaña Activa en la App de Ajustes ---
-  const settingsActiveTab = ref<'account' | 'wallpaper' | 'theme' | 'sounds' | 'network' | 'battery' | 'about'>('account');
+  const settingsActiveTab = ref<'account' | 'wallpaper' | 'theme' | 'sounds' | 'network' | 'battery' | 'about' | 'updates'>('account');
 
   // --- Pantalla: Brillo del Sistema (Persistido) ---
   const savedBrightness = localStorage.getItem('antorui-brightness');

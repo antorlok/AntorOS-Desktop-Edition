@@ -11,6 +11,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import { useStoreStore } from '@/stores/storeStore';
 import { useOSStore } from '@/stores/osStore';
 import { useUserStore } from '@/stores/userStore';
+import { useUpdateStore } from '@/stores/updateStore';
 import { SYSTEM_APPS } from '@/registry/apps';
 import 'xterm/css/xterm.css';
 
@@ -20,6 +21,7 @@ const terminalRef = ref<HTMLDivElement | null>(null);
 const storeStore = useStoreStore();
 const osStore = useOSStore();
 const userStore = useUserStore();
+const updateStore = useUpdateStore();
 
 // Instancias globales del terminal
 let term: Terminal | null = null;
@@ -231,8 +233,75 @@ function processCommand(cmd: string): void {
     const targetQuery = parts.slice(cmdIndex + 2).join(' ');
 
     if (!action) {
-      term?.write('\r\nUsage: antpac [install|remove|list]\r\n');
+      term?.write('\r\nUsage: antpac [install|remove|list|update|upgrade]\r\n');
       term?.write(prompt);
+      return;
+    }
+
+    if (action === 'update') {
+      term?.write('\r\n\x1b[36m[*] Buscando actualizaciones en los espejos de AntorOS...\x1b[0m\r\n');
+      updateStore.checkForUpdates().then(() => {
+        const activeTerm = term;
+        if (!activeTerm) return;
+        const hasUpdate = updateStore.remoteVersion !== null && updateStore.remoteVersion !== updateStore.currentVersion;
+        if (hasUpdate) {
+          activeTerm.write(`\x1b[32m[+] Nueva versión disponible: ${updateStore.remoteVersion}\x1b[0m\r\n`);
+          activeTerm.write('Registro de cambios:\r\n');
+          updateStore.changelog.forEach((change) => {
+            activeTerm.write(` \x1b[35m-\x1b[0m ${change}\r\n`);
+          });
+          activeTerm.write('\r\nEjecuta \'antpac upgrade\' para instalar.\r\n\r\n');
+        } else {
+          activeTerm.write('El sistema está en su última versión.\r\n\r\n');
+        }
+        activeTerm.write(prompt);
+      });
+      return;
+    }
+
+    if (action === 'upgrade') {
+      const hasUpdate = updateStore.remoteVersion !== null && updateStore.remoteVersion !== updateStore.currentVersion;
+      if (!hasUpdate) {
+        term?.write('\r\nNo hay ninguna actualización de sistema pendiente de instalar.\r\nEjecuta \'antpac update\' primero.\r\n\r\n');
+        term?.write(prompt);
+        return;
+      }
+
+      term?.write('\r\n\x1b[36m[*] Iniciando actualización del sistema OTA...\x1b[0m\r\n');
+      updateStore.isDownloading = true;
+      let progress = 0;
+
+      const progressInterval = setInterval(() => {
+        progress += 10;
+        
+        // Generar barra de progreso ANSI
+        const barSize = 10;
+        const fillCount = Math.floor(progress / 10);
+        const emptyCount = barSize - fillCount;
+        const progressBar = `\x1b[36m[\x1b[0m${'#'.repeat(fillCount)}${' '.repeat(emptyCount)}\x1b[36m]\x1b[0m ${progress}%`;
+        
+        term?.write(`\x1b[2K\rDescargando parche... ${progressBar}`);
+
+        if (progress >= 100) {
+          clearInterval(progressInterval);
+          
+          if (updateStore.remoteVersion) {
+            updateStore.currentVersion = updateStore.remoteVersion;
+            localStorage.setItem('antorui-system-version', updateStore.remoteVersion);
+          }
+          
+          updateStore.isDownloading = false;
+          updateStore.downloadProgress = 0;
+          updateStore.remoteVersion = null;
+          updateStore.changelog = [];
+
+          term?.write(`\r\n\x1b[32m[+] Parche aplicado. Reiniciando el kernel...\x1b[0m\r\n`);
+          
+          setTimeout(() => {
+            osStore.rebootSystem();
+          }, 800);
+        }
+      }, 500);
       return;
     }
 

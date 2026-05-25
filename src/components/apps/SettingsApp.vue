@@ -52,6 +52,16 @@
           <span>Información del Sistema</span>
         </button>
 
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ 'nav-item-active': configStore.settingsActiveTab === 'updates' }"
+          @click="configStore.settingsActiveTab = 'updates'"
+        >
+          <RefreshCwIcon class="nav-icon" />
+          <span>Actualización OTA</span>
+        </button>
+
         <span class="menu-label">Personalización</span>
         <button
           type="button"
@@ -122,6 +132,13 @@
         <AboutSettings />
       </div>
 
+      <!-- PESTAÑA: ACTUALIZACIÓN DE SOFTWARE -->
+      <div v-else-if="configStore.settingsActiveTab === 'updates'">
+        <h2 class="content-title">Actualización del Sistema</h2>
+        <p class="content-sub">Busca e instala las últimas compilaciones OTA del núcleo de AntorOS de forma segura.</p>
+        <UpdateSettings />
+      </div>
+
       <!-- PESTAÑA: FONDO DE PANTALLA -->
       <div v-else-if="configStore.settingsActiveTab === 'wallpaper'">
         <h2 class="content-title">Personalizar Fondo</h2>
@@ -170,7 +187,8 @@ import {
   Volume2 as Volume2Icon,
   Wifi as WifiIcon,
   Battery as BatteryIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  RefreshCw as RefreshCwIcon
 } from 'lucide-vue-next';
 import { useUserStore } from '@/stores/userStore';
 import { useConfigStore } from '@/stores/configStore';
@@ -181,6 +199,7 @@ import AudioSettings from '@/components/apps/settings/AudioSettings.vue';
 import NetworkSettings from '@/components/apps/settings/NetworkSettings.vue';
 import BatterySettings from '@/components/apps/settings/BatterySettings.vue';
 import AboutSettings from '@/components/apps/settings/AboutSettings.vue';
+import UpdateSettings from '@/components/apps/settings/UpdateSettings.vue';
 
 const userStore = useUserStore();
 const configStore = useConfigStore();

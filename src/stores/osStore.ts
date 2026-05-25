@@ -238,6 +238,21 @@ export const useOSStore = defineStore('os', () => {
     contextMenu.value.isOpen = false;
   }
 
+  /** Reinicia el sistema lanzando la animación de booteo y cerrando todas las ventanas */
+  function rebootSystem(): void {
+    isBooting.value = true;
+    windows.value = [];
+    try {
+      const audioCtx = (window as any).audioContext;
+      if (audioCtx) audioCtx.close();
+    } catch (e) {}
+
+    setTimeout(() => {
+      isBooting.value = false;
+      isAuthenticated.value = false;
+    }, 5000);
+  }
+
   return {
     // State
     windows,
@@ -265,5 +280,6 @@ export const useOSStore = defineStore('os', () => {
     addFileToFolder,
     openContextMenu,
     closeContextMenu,
+    rebootSystem,
   };
 });
