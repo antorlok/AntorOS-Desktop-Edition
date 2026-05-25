@@ -4,6 +4,11 @@
 
   <!-- Entorno de escritorio completo (solo tras autenticación) -->
   <Desktop v-else />
+
+  <!-- Pantalla completa de Animación de Arranque / Reinicio Gamer-Neón global -->
+  <Transition name="fade">
+    <BootAnimation v-if="osStore.isBooting" />
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -12,6 +17,7 @@ import { useKernel } from '@/composables/useKernel';
 import { useOSStore } from '@/stores/osStore';
 import LockScreen from '@/components/core/LockScreen.vue';
 import Desktop from '@/components/core/Desktop.vue';
+import BootAnimation from '@/components/core/BootAnimation.vue';
 
 const kernel = useKernel();
 const osStore = useOSStore();
@@ -31,4 +37,15 @@ watch(
 
 <style scoped>
 /* Los estilos globales están contenidos en main.css */
+
+/* Transición fade para la animación de reinicio global */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

@@ -22,12 +22,21 @@
           id="lock-password-input"
           ref="inputRef"
           v-model="password"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           class="password-input"
           placeholder="Contraseña"
           autocomplete="current-password"
           @keydown.enter="handleUnlock"
         />
+        <button
+          type="button"
+          class="password-toggle-btn"
+          @click="showPassword = !showPassword"
+          :title="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+        >
+          <EyeIcon v-if="!showPassword" class="toggle-icon" />
+          <EyeOffIcon v-else class="toggle-icon" />
+        </button>
       </div>
 
       <!-- Mensaje de error -->
@@ -47,12 +56,30 @@
       <span class="clock-time">{{ currentTime }}</span>
       <span class="clock-date">{{ currentDate }}</span>
     </div>
+
+    <!-- Controles de energía en el menú de arranque -->
+    <div class="power-controls">
+      <button type="button" class="power-btn" @click="handleRestart" title="Reiniciar Sistema">
+        <RotateCwIcon class="power-icon icon-green" />
+      </button>
+      <button type="button" class="power-btn btn-danger" @click="handleShutdown" title="Apagar Equipo">
+        <PowerIcon class="power-icon icon-magenta" />
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { User as UserIcon, Lock as LockIcon, Unlock as UnlockIcon } from 'lucide-vue-next';
+import {
+  User as UserIcon,
+  Lock as LockIcon,
+  Unlock as UnlockIcon,
+  RotateCw as RotateCwIcon,
+  Power as PowerIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon
+} from 'lucide-vue-next';
 import { useOSStore } from '@/stores/osStore';
 import { useUserStore } from '@/stores/userStore';
 
@@ -61,6 +88,32 @@ const userStore = useUserStore();
 const inputRef = ref<HTMLInputElement | null>(null);
 const password = ref('');
 const hasError = ref(false);
+const showPassword = ref(false);
+
+function handleShutdown() {
+  if (window.osAPI && typeof window.osAPI.shutdown === 'function') {
+    window.osAPI.shutdown();
+  } else {
+    console.warn('[Power] Apagado invocado fuera del contenedor de Electron.');
+    alert('Apagado físico simulado. Sesión finalizada.');
+  }
+}
+
+function handleRestart() {
+  osStore.isBooting = true;
+  osStore.windows = [];
+  try {
+    const audioCtx = (window as any).audioContext;
+    if (audioCtx) audioCtx.close();
+  } catch (e) {}
+
+  setTimeout(() => {
+    osStore.isBooting = false;
+    osStore.isAuthenticated = false;
+    password.value = '';
+    hasError.value = false;
+  }, 5000);
+}
 
 // ---- Reloj del sistema ----
 const currentTime = ref('');
@@ -354,5 +407,85 @@ function handleUnlock() {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Controles de energía en el arranque (inferior derecha) */
+.power-controls {
+  position: absolute;
+  bottom: 36px;
+  right: 48px;
+  display: flex;
+  gap: 16px;
+  z-index: 10;
+}
+
+.power-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.power-btn:hover {
+  transform: scale(1.08) translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.power-icon {
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+}
+
+.power-btn:hover .icon-green {
+  color: var(--neon-green);
+  filter: drop-shadow(var(--glow-green));
+}
+
+.power-btn:hover:not(.btn-danger) {
+  border-color: var(--neon-green);
+  box-shadow: var(--glow-green);
+}
+
+.btn-danger:hover {
+  border-color: var(--neon-magenta) !important;
+  box-shadow: var(--glow-magenta) !important;
+  background: rgba(244, 63, 94, 0.08) !important;
+}
+
+.btn-danger:hover .icon-magenta {
+  color: var(--neon-magenta);
+  filter: drop-shadow(var(--glow-magenta));
+}
+
+/* Botón de visibilidad de contraseña */
+.password-toggle-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: color 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  color: var(--neon-cyan);
+}
+
+.toggle-icon {
+  width: 18px;
+  height: 18px;
 }
 </style>

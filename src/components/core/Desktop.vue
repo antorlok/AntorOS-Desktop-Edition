@@ -31,11 +31,6 @@
 
     <!-- Menú Contextual Global de Aplicaciones (Cyber-Neon / Adaptable) -->
     <ContextMenu />
-
-    <!-- Pantalla completa de Animación de Arranque / Reinicio Gamer-Neón -->
-    <Transition name="fade">
-      <BootAnimation v-if="osStore.isBooting" />
-    </Transition>
   </div>
 </template>
 
@@ -47,7 +42,6 @@ import Shell from '@/components/core/Shell.vue';
 import WindowFrame from '@/components/core/WindowFrame.vue';
 import Taskbar from '@/components/core/Taskbar.vue';
 import ContextMenu from '@/components/core/ContextMenu.vue';
-import BootAnimation from '@/components/core/BootAnimation.vue';
 
 const osStore = useOSStore();
 const configStore = useConfigStore();

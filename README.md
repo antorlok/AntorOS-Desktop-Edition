@@ -157,6 +157,24 @@ Cualquier directiva no registrada localmente se enruta en tiempo real a través 
 
 ---
 
+## 🌀 Actualizaciones del Sistema (OTA Simulator)
+
+AntorOS cuenta con un motor de actualizaciones simuladas por aire (OTA) completamente reactivo y persistente (`localStorage`), que permite mantener el núcleo del simulador al día.
+
+### 🛠️ Método A: Interfaz Gráfica (App de Ajustes)
+1. Abre la aplicación de **Configuración ⚙️** desde el Dock.
+2. Ve a la pestaña **Actualización OTA** en la sección de *Sistema*.
+3. Haz clic en **Buscar actualizaciones** para contactar con el espejo del servidor.
+4. Si hay un parche disponible, podrás revisar el registro de cambios detallado (changelog) y hacer clic en **Instalar Ahora**.
+5. Se mostrará una barra de progreso de descarga y, al completarse, el sistema realizará un **reinicio en cascada del Kernel** de forma automática.
+
+### 💻 Método B: Consola de Comandos (Terminal)
+Puedes comprobar e instalar parches usando el gestor `antpac` directamente desde la consola:
+*   **`antpac update`**: Busca parches en los servidores de distribución asíncronamente. De existir cambios, imprimirá la nueva versión junto al changelog en colores neón ANSI.
+*   **`antpac upgrade`**: Inicia el empaquetado y la descarga del firmware mostrando una **barra de progreso animada en tiempo real** (`[######    ] 60%`) sobrescribiendo la misma línea física mediante secuencias de escape ANSI. Al finalizar, el Kernel se apagará y reiniciará de forma automática.
+
+---
+
 ## 📜 Licencia
 
 Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
