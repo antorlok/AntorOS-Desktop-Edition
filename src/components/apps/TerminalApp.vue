@@ -266,16 +266,15 @@ function processCommand(cmd: string): void {
 onMounted(() => {
   if (!terminalRef.value) return;
 
-  // 1. Inicialización de xterm.js con un tema de color Gamer-Neon
   term = new Terminal({
-    background: '#050505',
-    foreground: '#cdd6f4',
-    cursor: '#00f3ff',
     cursorBlink: true,
     fontFamily: 'Fira Code, Courier New, monospace',
     fontSize: 13,
     letterSpacing: 0.5,
     theme: {
+      background: '#050505',
+      foreground: '#cdd6f4',
+      cursor: '#00f3ff',
       black: '#000000',
       red: '#ff0055',
       green: '#00ff66',
