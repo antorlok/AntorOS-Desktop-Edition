@@ -3,6 +3,7 @@ module antor-os-daemon
 go 1.24.4
 
 require (
+	github.com/creack/pty v1.1.24 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect

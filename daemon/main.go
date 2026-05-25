@@ -3,10 +3,15 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"sync"
 	"time"
 
 	"antor-os-daemon/hardware"
 
+	"github.com/creack/pty"
 	"github.com/gorilla/websocket"
 )
 
@@ -17,7 +22,10 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// handleWebSocket gestiona las conexiones WebSocket entrantes en /ws
+// handleWebSocket gestiona las conexiones WebSocket entrantes en /ws.
+// Soporta aislamiento mediante query parameters:
+// - /ws?type=terminal -> Conexión dedicada a Pseudo-terminal (PTY) interactiva (sin ticker de telemetría).
+// - /ws -> Conexión de telemetría de hardware regular.
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -26,24 +34,113 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	log.Println("Cliente (User Space) conectado al Kernel WebSocket")
+	// Identificar el propósito de la conexión para optimizar el tráfico
+	isTerminal := r.URL.Query().Get("type") == "terminal"
+	if isTerminal {
+		log.Println("Cliente conectado al Kernel WebSocket - Modo Terminal (PTY)")
+	} else {
+		log.Println("Cliente conectado al Kernel WebSocket - Modo Telemetría")
+	}
 
 	// Canal para indicar la desconexión del cliente
 	done := make(chan struct{})
 
-	// Goroutine auxiliar: Necesaria para leer la conexión y detectar si el cliente cierra la pestaña/app
+	// Estructura de mensajes entrantes
+	type WSMessage struct {
+		Type string `json:"type"`
+		Data string `json:"data"`
+	}
+
+	var ptyFile *os.File
+	var ptyMutex sync.Mutex
+
+	// Goroutine de Lectura: Procesa datos del WebSocket entrante
 	go func() {
 		defer close(done)
+		defer func() {
+			ptyMutex.Lock()
+			if ptyFile != nil {
+				log.Println("Cerrando proceso PTY asociado a la sesión de WebSocket.")
+				ptyFile.Close()
+				ptyFile = nil
+			}
+			ptyMutex.Unlock()
+		}()
+
 		for {
-			_, _, err := conn.ReadMessage()
+			var msg WSMessage
+			err := conn.ReadJSON(&msg)
 			if err != nil {
-				log.Println("Cliente desconectado del WebSocket:", err)
+				log.Println("Cliente desconectado o error de lectura en WebSocket:", err)
 				break
+			}
+
+			// Manejo de comandos dirigidos a la pseudo-terminal (PTY)
+			if msg.Type == "pty_input" {
+				ptyMutex.Lock()
+				if ptyFile == nil {
+					// Inicialización perezosa (Lazy) de la Pseudo-Terminal
+					homeDir, err := os.UserHomeDir()
+					var workspace string
+					if err != nil {
+						workspace = "./antor-workspace"
+					} else {
+						workspace = filepath.Join(homeDir, "Documentos", "antor-workspace")
+					}
+					// Crear directorio seguro de trabajo controlado
+					_ = os.MkdirAll(workspace, 0755)
+
+					cmd := exec.Command("bash")
+					cmd.Dir = workspace
+					// Configurar variables de entorno y soporte de colores ANSI de 256 colores
+					cmd.Env = append(os.Environ(), "TERM=xterm-256color")
+
+					f, err := pty.Start(cmd)
+					if err != nil {
+						log.Println("Error al iniciar Pseudo-terminal (PTY):", err)
+						ptyMutex.Unlock()
+						continue
+					}
+					ptyFile = f
+					log.Printf("PTY creada exitosamente en el workspace seguro: %s", workspace)
+
+					// Goroutine de salida de PTY: Escucha Stdout/Stderr de la shell y retransmite al WebSocket
+					go func(pf *os.File) {
+						buf := make([]byte, 1024)
+						for {
+							n, err := pf.Read(buf)
+							if err != nil {
+								// PTY cerrada o fin de lectura, terminar goroutine
+								break
+							}
+							if n > 0 {
+								// Enviar salida cruda encapsulada en JSON
+								outMsg := map[string]string{
+									"type": "pty_output",
+									"data": string(buf[:n]),
+								}
+								_ = conn.WriteJSON(outMsg)
+							}
+						}
+					}(ptyFile)
+				}
+
+				// Transmitir entrada (Stdin) al descriptor de la PTY
+				if ptyFile != nil {
+					_, _ = ptyFile.Write([]byte(msg.Data))
+				}
+				ptyMutex.Unlock()
 			}
 		}
 	}()
 
-	// Ticker para enviar la telemetría cada 1 segundo
+	// Si la conexión es de tipo terminal, no enviamos telemetría de hardware periódica
+	if isTerminal {
+		<-done
+		return
+	}
+
+	// Ticker para enviar la telemetría de hardware cada 1 segundo (Solo en conexiones de telemetría)
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
@@ -51,11 +148,10 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-done:
-			// El cliente se desconectó, finalizamos la Goroutine limpiamente
-			log.Println("Deteniendo el envío de telemetría por desconexión.")
+			log.Println("Deteniendo el envío de telemetría por desconexión del cliente.")
 			return
 		case <-ticker.C:
-			// Extraer estadísticas físicas
+			// Extraer estadísticas físicas reales
 			stats, err := hardware.GetStats()
 			if err != nil {
 				log.Println("Error al leer estadísticas del hardware:", err)
@@ -66,7 +162,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			err = conn.WriteJSON(stats)
 			if err != nil {
 				log.Println("Error al enviar telemetría al cliente:", err)
-				return // Se asume desconexión o error fatal, abortar
+				return // Desconexión o error fatal, abortar
 			}
 		}
 	}
@@ -78,7 +174,7 @@ func main() {
 
 	port := "8080"
 	log.Printf("Iniciando el Kernel de Antor OS (Daemon) en http://localhost:%s", port)
-	
+
 	// Bloquea el hilo principal sirviendo la API
 	err := http.ListenAndServe("localhost:"+port, nil)
 	if err != nil {

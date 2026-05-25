@@ -124,10 +124,36 @@ Si deseas generar los binarios finales:
 | App | Descripción |
 | :--- | :--- |
 | **🌐 Navegador** | Navegación web avanzada integrada. |
-| **💻 Terminal** | Interfaz de comandos nativa de AntorOS. |
+| **💻 Terminal** | Interfaz de comandos nativa de AntorOS compatible con PTY real. |
 | **📁 Archivos** | Gestión y exploración de archivos virtuales. |
 | **📊 Monitor** | Estadísticas de hardware (CPU/RAM) en vivo. |
 | **⚙️ Ajustes** | Centro de control para personalización y temas. |
+
+---
+
+## 💻 Consola de Comandos (Terminal App)
+
+La aplicación de **Terminal** de AntorOS cuenta con una arquitectura de ejecución mixta (comandos locales emulados e interacción directa PTY):
+
+### 🛠️ Comandos de AntorOS (Emulados en Vue 3 & Pinia)
+
+- **`fastfetch`**: Muestra información física detallada de telemetría del sistema, procesador, GPU y uptime, junto con un arte ASCII cyberpunk en colores ANSI.
+- **`antpac`**: Gestor de paquetes virtual integrado con el store de Pinia (`storeStore.ts`) que gestiona el ciclo de vida de aplicaciones de la tienda:
+  *   `antpac list`: Muestra la lista de aplicaciones de terceros disponibles para descargar en Cyber Store (No requiere `sudo`).
+  *   `sudo antpac install <app_id>`: Requiere autenticación root. Tras validar la contraseña de usuario (`userStore.password`), inicia un proceso interactivo animado de descarga e instalación `[###       ] 30%` con barra de progreso interactiva en consola y persistencia automática en el launcher.
+  *   `sudo antpac remove <app_id>`: Requiere autenticación root. Tras validar la contraseña de usuario, desinstala una aplicación de terceros deteniendo y destruyendo de forma segura cualquier ventana de renderizado abierta asociada a ella.
+- **`clear`**: Limpia completamente el búfer y el lienzo visible de la consola de comandos.
+
+### 🌐 Comandos del Sistema Anfitrión (Puente PTY de Go)
+
+Cualquier directiva no registrada localmente se enruta en tiempo real a través del WebSocket del Kernel hacia una **Pseudo-Terminal (PTY)** en segundo plano gestionada por el Daemon en Go:
+- Los comandos operan bajo un directorio de trabajo seguro y aislado en el host (`~/Documentos/antor-workspace/`) para proteger el sistema anfitrión.
+- Permite la ejecución e interacción con utilidades reales del sistema operativo anfitrión como:
+  *   `ls` / `dir`: Listar archivos locales de trabajo.
+  *   `pwd`: Mostrar la ruta absoluta de ejecución.
+  *   `mkdir <dir_name>`: Crear directorios.
+  *   `touch <file_name>`: Crear archivos planos.
+  *   Cualquier comando de bash compatible en la shell de la máquina anfitriona.
 
 ---
 
