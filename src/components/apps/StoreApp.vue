@@ -107,7 +107,7 @@
 
         <div class="installed-list">
           <div
-            v-for="app in storeStore.removableApps"
+            v-for="app in storeStore.installedStoreApps"
             :key="app.id"
             class="installed-list-item"
           >
@@ -133,7 +133,7 @@
           </div>
 
           <!-- Estado vacío de instaladas -->
-          <div v-if="storeStore.removableApps.length === 0" class="store-empty-state">
+          <div v-if="storeStore.installedStoreApps.length === 0" class="store-empty-state">
             <PackageIcon class="empty-icon" />
             <h4 class="empty-title">Sin aplicaciones añadidas</h4>
             <p class="empty-desc">No has instalado ninguna aplicación de terceros aún. Explora la tienda para comenzar.</p>

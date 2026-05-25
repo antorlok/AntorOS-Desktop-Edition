@@ -6,13 +6,16 @@ import { useOSStore } from '@/stores/osStore';
 export const useStoreStore = defineStore('store', () => {
   const osStore = useOSStore();
 
-  // Inicializar apps instaladas por defecto con todas las que son isCore: true
-  const coreAppIds = SYSTEM_APPS.filter((app) => app.isCore).map((app) => app.id);
+  // Apps preinstaladas por defecto (todo el catálogo excepto las de la tienda de terceros)
+  const defaultPreinstalledAppIds = SYSTEM_APPS
+    .filter((app) => app.id !== 'neonplayer' && app.id !== 'cybercode' && app.id !== 'sysbench')
+    .map((app) => app.id);
+
   const savedInstalled = localStorage.getItem('antorui-installed-apps');
   
   // Estado: IDs de aplicaciones instaladas
   const installedAppIds = ref<string[]>(
-    savedInstalled ? JSON.parse(savedInstalled) : [...coreAppIds]
+    savedInstalled ? JSON.parse(savedInstalled) : [...defaultPreinstalledAppIds]
   );
 
   // Watcher para persistencia automática
@@ -25,15 +28,17 @@ export const useStoreStore = defineStore('store', () => {
   );
 
   // Getters
-  // Aplicaciones disponibles para descargar (no instaladas)
+  // Aplicaciones disponibles para descargar (no instaladas y que no son esenciales)
   const availableApps = computed(() => {
-    return SYSTEM_APPS.filter((app) => !installedAppIds.value.includes(app.id));
+    return SYSTEM_APPS.filter(
+      (app) => !installedAppIds.value.includes(app.id) && !app.isSystemEssential
+    );
   });
 
-  // Aplicaciones de terceros que pueden ser desinstaladas (instaladas y no son core)
-  const removableApps = computed(() => {
+  // Aplicaciones que están instaladas y que no son esenciales (para administrar en la tienda)
+  const installedStoreApps = computed(() => {
     return SYSTEM_APPS.filter(
-      (app) => installedAppIds.value.includes(app.id) && !app.isCore
+      (app) => installedAppIds.value.includes(app.id) && !app.isSystemEssential
     );
   });
 
@@ -45,16 +50,18 @@ export const useStoreStore = defineStore('store', () => {
   }
 
   function uninstallApp(id: string) {
+    const appEntry = SYSTEM_APPS.find((app) => app.id === id);
+    if (!appEntry || appEntry.isSystemEssential) {
+      return; // Protección de seguridad temprana
+    }
+
     installedAppIds.value = installedAppIds.value.filter((appId) => appId !== id);
 
     // Cierre robusto: Cerrar cualquier ventana abierta asociada a esta app desinstalada
-    const appEntry = SYSTEM_APPS.find((app) => app.id === id);
-    if (appEntry) {
-      const windowsToClose = osStore.windows.filter((w) => w.appName === appEntry.name);
-      windowsToClose.forEach((win) => {
-        osStore.closeWindow(win.id);
-      });
-    }
+    const windowsToClose = osStore.windows.filter((w) => w.appName === appEntry.name);
+    windowsToClose.forEach((win) => {
+      osStore.closeWindow(win.id);
+    });
   }
 
   function isAppInstalled(id: string): boolean {
@@ -64,7 +71,7 @@ export const useStoreStore = defineStore('store', () => {
   return {
     installedAppIds,
     availableApps,
-    removableApps,
+    installedStoreApps,
     installApp,
     uninstallApp,
     isAppInstalled

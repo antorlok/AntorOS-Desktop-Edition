@@ -210,7 +210,29 @@ const searchQuery = ref('');
   flex-direction: column;
   padding: 24px 16px;
   gap: 20px;
+  overflow-y: auto; /* Permite scroll vertical unificado en toda la barra lateral para evitar cortes en pantallas pequeñas */
+  overflow-x: hidden;
+  max-height: 100%;
   transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Scrollbar ultra sutil para la barra lateral completa */
+.settings-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.settings-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+}
+
+.settings-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
 }
 
 /* Tarjeta de Perfil de Usuario */
@@ -222,6 +244,7 @@ const searchQuery = ref('');
   border: var(--glass-border);
   padding: 12px;
   border-radius: 10px;
+  flex-shrink: 0; /* Evita que se encoja cuando hay scroll */
 }
 
 .avatar-glow {
@@ -262,6 +285,7 @@ const searchQuery = ref('');
 .search-box {
   position: relative;
   width: 100%;
+  flex-shrink: 0; /* Evita que se encoja cuando hay scroll */
 }
 
 .search-icon {
@@ -297,6 +321,7 @@ const searchQuery = ref('');
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex-shrink: 0; /* Mantiene el tamaño natural de la lista de categorías dentro del scrollbar general */
 }
 
 .menu-label {

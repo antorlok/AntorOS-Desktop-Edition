@@ -132,6 +132,7 @@ function onVolumeChange(e: Event) {
 /* Input Range Cyber-Gamer Premium */
 .cyber-slider {
   -webkit-appearance: none;
+  appearance: none; /* Standard property for cross-browser compatibility */
   width: 100%;
   height: 6px;
   border-radius: 3px;
@@ -151,6 +152,7 @@ function onVolumeChange(e: Event) {
 /* Estilo del Botón de Arrastre (Thumb) - Webkit */
 .cyber-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
+  appearance: none; /* Standard property for cross-browser compatibility */
   height: 16px;
   width: 16px;
   border-radius: 50%;
