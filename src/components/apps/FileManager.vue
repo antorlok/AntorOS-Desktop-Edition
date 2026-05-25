@@ -32,32 +32,63 @@
 
       <!-- Control de Acciones y Operaciones de Archivos -->
       <div class="action-controls">
-        <button class="action-btn" @click="createNewFolder" title="Nueva Carpeta">
-          <FolderPlusIcon class="action-icon" />
-          <span>Nueva carpeta</span>
-        </button>
-        <button class="action-btn" @click="createNewFile" title="Nuevo Archivo de Texto">
-          <FilePlusIcon class="action-icon" />
-          <span>Nuevo archivo</span>
-        </button>
-        <button
-          class="action-btn btn-danger"
-          :disabled="!selectedItemName"
-          @click="deleteSelectedItem"
-          title="Eliminar elemento"
-        >
-          <TrashIcon class="action-icon" />
-          <span>Eliminar</span>
-        </button>
-        <button
-          class="action-btn btn-accent"
-          :disabled="!selectedItemName"
-          @click="showMoveModal = true"
-          title="Mover elemento"
-        >
-          <MoveIcon class="action-icon" />
-          <span>Mover</span>
-        </button>
+        <template v-if="currentPath === 'Papelera'">
+          <button
+            class="action-btn btn-accent"
+            :disabled="!selectedItemName"
+            @click="restoreSelectedItem"
+            title="Restaurar elemento a su carpeta original"
+          >
+            <FolderPlusIcon class="action-icon" />
+            <span>Restaurar</span>
+          </button>
+          <button
+            class="action-btn btn-danger"
+            :disabled="currentFiles.length === 0"
+            @click="emptyTrash"
+            title="Vaciar todos los elementos permanentemente"
+          >
+            <TrashIcon class="action-icon" />
+            <span>Vaciar papelera</span>
+          </button>
+          <button
+            class="action-btn btn-danger"
+            :disabled="!selectedItemName"
+            @click="deleteSelectedItem"
+            title="Eliminar permanentemente"
+          >
+            <TrashIcon class="action-icon" />
+            <span>Eliminar para siempre</span>
+          </button>
+        </template>
+        <template v-else>
+          <button class="action-btn" @click="createNewFolder" title="Nueva Carpeta">
+            <FolderPlusIcon class="action-icon" />
+            <span>Nueva carpeta</span>
+          </button>
+          <button class="action-btn" @click="createNewFile" title="Nuevo Archivo de Texto">
+            <FilePlusIcon class="action-icon" />
+            <span>Nuevo archivo</span>
+          </button>
+          <button
+            class="action-btn btn-danger"
+            :disabled="!selectedItemName"
+            @click="deleteSelectedItem"
+            title="Eliminar elemento"
+          >
+            <TrashIcon class="action-icon" />
+            <span>Eliminar</span>
+          </button>
+          <button
+            class="action-btn btn-accent"
+            :disabled="!selectedItemName"
+            @click="showMoveModal = true"
+            title="Mover elemento"
+          >
+            <MoveIcon class="action-icon" />
+            <span>Mover</span>
+          </button>
+        </template>
       </div>
     </header>
 
@@ -93,7 +124,15 @@
             <!-- Icono según tipo de archivo -->
             <div class="item-icon-wrapper">
               <FolderIcon v-if="item.type === 'dir'" class="item-icon folder-icon" />
-              <component :is="getFileIcon(item.name)" v-else class="item-icon file-icon" />
+              <template v-else>
+                <img 
+                  v-if="isImageFile(item.name) && item.dataUrl" 
+                  :src="item.dataUrl" 
+                  class="item-icon image-thumbnail" 
+                  alt="thumbnail" 
+                />
+                <component v-else :is="getFileIcon(item.name)" class="item-icon file-icon" />
+              </template>
             </div>
 
             <!-- Nombre y detalles -->
@@ -282,7 +321,8 @@ const destinations = [
   { id: 'Inicio', label: 'Inicio', icon: HomeIcon },
   { id: 'Descargas', label: 'Descargas', icon: DownloadIcon },
   { id: 'Documentos', label: 'Documentos', icon: BookOpenIcon },
-  { id: 'Imágenes', label: 'Imágenes', icon: ImageIcon }
+  { id: 'Imágenes', label: 'Imágenes', icon: ImageIcon },
+  { id: 'Papelera', label: 'Papelera', icon: TrashIcon }
 ];
 
 interface FileItem {
@@ -432,15 +472,70 @@ function createNewFile() {
   });
 }
 
-// Elimina el archivo o carpeta seleccionada
+// Elimina el archivo o carpeta seleccionada (o lo envía a la papelera)
 function deleteSelectedItem() {
   if (!selectedItemName.value) return;
   const name = selectedItemName.value;
-  if (!confirm(`¿Estás seguro de que deseas eliminar "${name}"?`)) return;
 
-  const folderContent = osStore.fileSystem[currentPath.value] || [];
-  osStore.fileSystem[currentPath.value] = folderContent.filter(item => item.name !== name);
+  if (currentPath.value === 'Papelera') {
+    if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente "${name}"? Esta acción no se puede deshacer.`)) return;
+    const folderContent = osStore.fileSystem['Papelera'] || [];
+    osStore.fileSystem['Papelera'] = folderContent.filter(item => item.name !== name);
+    selectedItemName.value = null;
+    return;
+  }
 
+  if (!confirm(`¿Estás seguro de que deseas mover "${name}" a la Papelera?`)) return;
+
+  const sourceContent = osStore.fileSystem[currentPath.value] || [];
+  const itemToDelete = sourceContent.find(item => item.name === name);
+
+  if (itemToDelete) {
+    // Eliminar del directorio de origen
+    osStore.fileSystem[currentPath.value] = sourceContent.filter(item => item.name !== name);
+    // Inyectar en la Papelera conservando la metadato originalPath para posterior restauración
+    osStore.addFileToFolder('Papelera', {
+      ...itemToDelete,
+      originalFolder: currentPath.value
+    } as any);
+  }
+
+  selectedItemName.value = null;
+}
+
+// Restaura un elemento de la papelera a su ubicación original
+function restoreSelectedItem() {
+  if (!selectedItemName.value) return;
+  const name = selectedItemName.value;
+  const trashContent = osStore.fileSystem['Papelera'] || [];
+  const itemToRestore = trashContent.find(item => item.name === name) as any;
+
+  if (itemToRestore) {
+    const destFolder = itemToRestore.originalFolder || 'Documentos';
+
+    // Validar colisión de nombres en la ruta original
+    const destContent = osStore.fileSystem[destFolder] || [];
+    if (destContent.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+      alert(`Ya existe un archivo llamado "${name}" en "${destFolder}". Elimínalo o cámbiale el nombre antes de restaurar.`);
+      return;
+    }
+
+    // Quitar de la Papelera
+    osStore.fileSystem['Papelera'] = trashContent.filter(item => item.name !== name);
+
+    // Reinyectar al destino original limpio de metadatos de papelera
+    const cleanItem = { ...itemToRestore };
+    delete cleanItem.originalFolder;
+    osStore.addFileToFolder(destFolder, cleanItem);
+  }
+
+  selectedItemName.value = null;
+}
+
+// Vacía por completo la papelera virtual
+function emptyTrash() {
+  if (!confirm('¿Estás seguro de que deseas vaciar la Papelera? Todos los elementos se destruirán de forma permanente.')) return;
+  osStore.fileSystem['Papelera'] = [];
   selectedItemName.value = null;
 }
 
@@ -788,6 +883,13 @@ function moveSelectedItem(targetFolder: string) {
   width: 38px;
   height: 38px;
   transition: transform 0.2s ease;
+}
+
+.image-thumbnail {
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .grid-item:hover .item-icon {

@@ -17,6 +17,7 @@ import {
   Code,
   Gauge,
   Gamepad2,
+  Blocks,
   type LucideIcon
 } from 'lucide-vue-next';
 
@@ -262,5 +263,17 @@ export const SYSTEM_APPS: AppRegistryEntry[] = [
     description: 'El clásico juego de la serpiente renderizado en tiempo real.',
     developer: 'Antorlok Games',
     size: '2.5 MB'
+  },
+  {
+    id: 'tetris',
+    name: 'TetrisApp',
+    title: 'Cyber Blocks',
+    icon: Blocks,
+    defaultWidth: 380,
+    defaultHeight: 580,
+    isSystemEssential: false,
+    description: 'Clásico juego de encajar bloques con físicas de gravedad y eliminación de líneas.',
+    developer: 'Antorlok Games',
+    size: '2.1 MB'
   }
 ];

@@ -59,18 +59,11 @@
               <span class="card-label">Hoja de cálculo</span>
             </button>
 
-            <!-- PPTX Card (Simulada) -->
-            <button class="launch-card card-pptx" @click="launchNewDoc('docx')">
-              <div class="card-badge badge-pptx">PPTX</div>
-              <TvIcon class="card-icon" />
-              <span class="card-label">Presentación</span>
-            </button>
-
             <!-- PDF Card -->
             <button class="launch-card card-pdf" @click="launchNewDoc('pdf')">
               <div class="card-badge badge-pdf">PDF</div>
               <BookOpenIcon class="card-icon" />
-              <span class="card-label">PDF</span>
+              <span class="card-label">PDF Editor</span>
             </button>
           </div>
 
@@ -106,7 +99,7 @@
                     <td class="file-type-cell">
                       <span
                         class="format-tag"
-                        :class="file.name.endsWith('.docx') ? 'tag-docx' : 'tag-xlsx'"
+                        :class="file.name.endsWith('.docx') ? 'tag-docx' : (file.name.endsWith('.xlsx') ? 'tag-xlsx' : 'tag-pdf')"
                       >
                         {{ file.name.split('.').pop()?.toUpperCase() }}
                       </span>
@@ -211,7 +204,7 @@
             placeholder="documento.docx"
             spellcheck="false"
           />
-          <button class="ribbon-save-btn btn-docx-theme" @click="saveDocxFile">
+          <button class="ribbon-save-btn btn-docx-theme" @click="openSaveDialog('docx')">
             <SaveIcon class="save-icon" />
             Guardar
           </button>
@@ -276,7 +269,7 @@
             placeholder="planilla.xlsx"
             spellcheck="false"
           />
-          <button class="ribbon-save-btn btn-xlsx-theme" @click="saveXlsxFile">
+          <button class="ribbon-save-btn btn-xlsx-theme" @click="openSaveDialog('xlsx')">
             <SaveIcon class="save-icon" />
             Guardar
           </button>
@@ -320,37 +313,152 @@
       </div>
     </div>
 
-    <!-- ── CASO 4: VISOR PDF CYBER ── -->
+    <!-- ── CASO 4: EDITOR PDF ESTILO ONLYOFFICE ── -->
     <div v-else-if="activeMode === 'pdf'" class="office-editor-view">
-      <!-- Ribbon Bar de PDF -->
+      <!-- Ribbon Bar de PDF Editor -->
       <header class="editor-ribbon">
         <button class="ribbon-back-btn" @click="backToHub" title="Volver al inicio">
           <ArrowLeftIcon class="ribbon-back-icon" />
         </button>
-        <span class="pdf-viewer-title">Visor PDF de Seguridad AntorOS</span>
+
+        <div class="ribbon-group">
+          <button class="ribbon-btn" @click="formatDoc('bold')" title="Negrita (Ctrl+B)">
+            <BoldIcon class="ribbon-icon" />
+          </button>
+          <button class="ribbon-btn" @click="formatDoc('italic')" title="Cursiva (Ctrl+I)">
+            <ItalicIcon class="ribbon-icon" />
+          </button>
+          <button class="ribbon-btn" @click="formatDoc('underline')" title="Subrayado (Ctrl+U)">
+            <UnderlineIcon class="ribbon-icon" />
+          </button>
+        </div>
+
+        <div class="ribbon-divider"></div>
+
+        <div class="ribbon-group">
+          <button class="ribbon-btn" @click="formatDoc('justifyLeft')" title="Alinear a la izquierda">
+            <AlignLeftIcon class="ribbon-icon" />
+          </button>
+          <button class="ribbon-btn" @click="formatDoc('justifyCenter')" title="Centrar">
+            <AlignCenterIcon class="ribbon-icon" />
+          </button>
+          <button class="ribbon-btn" @click="formatDoc('justifyRight')" title="Alinear a la derecha">
+            <AlignRightIcon class="ribbon-icon" />
+          </button>
+          <button class="ribbon-btn" @click="formatDoc('justifyFull')" title="Justificar">
+            <AlignJustifyIcon class="ribbon-icon" />
+          </button>
+        </div>
+
+        <!-- Acciones de Guardar -->
+        <div class="ribbon-actions">
+          <input
+            v-model="fileNameInput"
+            type="text"
+            class="ribbon-filename-input"
+            placeholder="documento.pdf"
+            spellcheck="false"
+          />
+          <button class="ribbon-save-btn btn-pdf-theme" @click="openSaveDialog('pdf')">
+            <SaveIcon class="save-icon" />
+            Guardar
+          </button>
+        </div>
       </header>
 
+      <!-- Papel PDF Editable OnlyOffice -->
       <div class="pdf-workspace">
-        <div class="pdf-hologram-sheet">
-          <BookOpenIcon class="pdf-deco-icon" />
-          <h2 class="pdf-doc-title">MANUAL DE KERNEL Y SEGURIDAD VIRTUAL</h2>
-          <div class="pdf-divider"></div>
-          
-          <div class="pdf-content-blocks">
-            <h3>Sección 1.0: Arquitectura de AntorOS</h3>
-            <p>AntorOS se basa en una arquitectura limpia y desacoplada (Clean Architecture) que coordina un Backend ligero escrito en Go nativo y un Frontend reactivo de alto rendimiento implementado en Vue 3 y Pinia.</p>
-            
-            <h3>Sección 2.0: Telemetría en tiempo real</h3>
-            <p>La telemetría del sistema fluye bidireccionalmente mediante WebSockets. El daemon recopila y publica métricas de CPU y RAM del microcontrolador anfitrión y el store las sincroniza reactivamente en la interfaz.</p>
-
-            <h3>Sección 3.0: Sistema de archivos encriptado</h3>
-            <p>El directorio raíz virtual de AntorUI se almacena de forma segura en memoria reactiva mapeada en el store central, permitiendo la persistencia multimedia instantánea (cámara, visor de fotos, planilla ofimática) con un rendimiento ultra-rápido.</p>
-          </div>
-          
-          <span class="pdf-watermark">CONFIDENCIAL - ANTOROS CORE DEVELOPMENT</span>
+        <div class="pdf-paper-wrapper">
+          <div
+            ref="pdfEditorRef"
+            class="pdf-hologram-sheet"
+            contenteditable="true"
+            spellcheck="false"
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Editor de PDF OnlyOffice"
+          ></div>
         </div>
       </div>
     </div>
+
+    <!-- Selector de Archivos al estilo GNOME Files -->
+    <Transition name="fade">
+      <div v-if="isSaveDialogOpen" class="gnome-dialog-overlay" @click.self="closeSaveDialog">
+        <div class="gnome-dialog-card">
+          <!-- Cabecera -->
+          <header class="gnome-dialog-header">
+            <div class="header-left">
+              <FolderOpenIcon class="header-icon" />
+              <span class="dialog-title">Guardar Como</span>
+            </div>
+            <button class="dialog-close-btn" @click="closeSaveDialog">✕</button>
+          </header>
+
+          <!-- Cuerpo Principal -->
+          <div class="gnome-dialog-body">
+            <!-- Barra Lateral de Lugares (Estilo GNOME) -->
+            <aside class="gnome-dialog-sidebar">
+              <span class="sidebar-title">Lugares</span>
+              <button 
+                v-for="folder in availableFolders" 
+                :key="folder"
+                class="sidebar-folder-btn"
+                :class="{ 'active-folder': selectedFolderForSave === folder }"
+                @click="selectedFolderForSave = folder"
+              >
+                <FolderOpenIcon class="folder-btn-icon" />
+                <span>{{ folder }}</span>
+              </button>
+            </aside>
+
+            <!-- Lista de Archivos (Previsualización) -->
+            <main class="gnome-dialog-content">
+              <div class="content-header-path">
+                <span class="content-path-title">Sistema / <strong>{{ selectedFolderForSave }}</strong></span>
+              </div>
+              <div class="files-preview-list">
+                <div 
+                  v-for="file in (osStore.fileSystem[selectedFolderForSave] || [])" 
+                  :key="file.name"
+                  class="file-preview-item"
+                >
+                  <FileTextIcon v-if="file.name.endsWith('.docx') || file.name.endsWith('.txt')" class="file-preview-icon icon-docx" />
+                  <TableIcon v-else-if="file.name.endsWith('.xlsx')" class="file-preview-icon icon-xlsx" />
+                  <BookOpenIcon v-else class="file-preview-icon icon-pdf" />
+                  <div class="file-preview-details">
+                    <span class="file-preview-name">{{ file.name }}</span>
+                    <span class="file-preview-size">{{ file.size || '12 KB' }}</span>
+                  </div>
+                </div>
+                <div v-if="(osStore.fileSystem[selectedFolderForSave] || []).length === 0" class="empty-preview-state">
+                  Carpeta vacía. Sin archivos guardados aquí.
+                </div>
+              </div>
+            </main>
+          </div>
+
+          <!-- Pie de Página (GNOME Footer) -->
+          <footer class="gnome-dialog-footer">
+            <div class="dialog-name-input-group">
+              <label for="dialog-filename">Nombre de archivo:</label>
+              <input 
+                id="dialog-filename" 
+                v-model="fileNameInput" 
+                type="text" 
+                class="dialog-filename-input"
+                placeholder="nombre_archivo"
+                spellcheck="false"
+              />
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-dialog-cancel" @click="closeSaveDialog">Cancelar</button>
+              <button class="btn-dialog-save" @click="confirmSaveFile">Guardar</button>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Mensaje Toast de Guardado Rápido -->
     <div class="save-toast" :class="{ 'toast-visible': saveMessage }">
@@ -396,6 +504,7 @@ const activeFileRef = ref<string | null>(null);
 
 // ---- Editores Refs ----
 const docxEditorRef = ref<HTMLDivElement | null>(null);
+const pdfEditorRef = ref<HTMLDivElement | null>(null);
 
 // ---- Paleta de Colores Neón para XLSX ----
 const activeFillColorClass = ref('bg-transparent');
@@ -471,10 +580,46 @@ function sumActiveColumn() {
   xlsxGrid.value[activeCellKey.value].value = total.toString();
 }
 
-// Filtro de archivos con extensión ofimática guardados en Documentos
+// Directorios ofimáticos disponibles para guardar
+const availableFolders = ['Descargas', 'Documentos', 'Imágenes'];
+
+// Estado del diálogo de guardado estilo GNOME
+const isSaveDialogOpen = ref(false);
+const selectedFolderForSave = ref('Documentos');
+const saveType = ref<'docx' | 'xlsx' | 'pdf'>('docx');
+
+function openSaveDialog(type: 'docx' | 'xlsx' | 'pdf') {
+  saveType.value = type;
+  isSaveDialogOpen.value = true;
+}
+
+function closeSaveDialog() {
+  isSaveDialogOpen.value = false;
+}
+
+function confirmSaveFile() {
+  if (saveType.value === 'docx') {
+    executeSaveDocx();
+  } else if (saveType.value === 'xlsx') {
+    executeSaveXlsx();
+  } else {
+    executeSavePdf();
+  }
+  isSaveDialogOpen.value = false;
+}
+
+// Filtro de archivos con extensión ofimática guardados en TODOS los directorios escaneados
 const documentFiles = computed(() => {
-  const docs = osStore.fileSystem['Documentos'] || [];
-  return docs.filter(f => f.name.endsWith('.docx') || f.name.endsWith('.xlsx'));
+  const allFiles: { name: string; type: 'dir' | 'file'; size?: string; dataUrl?: string; folder: string }[] = [];
+  availableFolders.forEach(folder => {
+    const docs = osStore.fileSystem[folder] || [];
+    docs.forEach(f => {
+      if (f.name.endsWith('.docx') || f.name.endsWith('.xlsx') || f.name.endsWith('.pdf')) {
+        allFiles.push({ ...f, folder });
+      }
+    });
+  });
+  return allFiles;
 });
 
 // ---- Lanzadores y Creación ----
@@ -496,6 +641,20 @@ function launchNewDoc(mode: 'docx' | 'xlsx' | 'pdf') {
   } else if (mode === 'xlsx') {
     fileNameInput.value = `planilla-${Date.now().toString().slice(-4)}.xlsx`;
     initEmptyGrid();
+  } else if (mode === 'pdf') {
+    fileNameInput.value = `documento-${Date.now().toString().slice(-4)}.pdf`;
+    nextTick(() => {
+      if (pdfEditorRef.value) {
+        pdfEditorRef.value.innerHTML = `
+          <h2 style="text-align: center; color: var(--neon-magenta); text-shadow: var(--glow-magenta); margin-top: 10px;">MANUAL DE KERNEL Y SEGURIDAD VIRTUAL</h2>
+          <hr style="border: none; border-top: 1px solid rgba(255, 0, 255, 0.2); margin: 20px 0;" />
+          <h3 style="color: var(--neon-cyan); text-shadow: var(--glow-cyan); margin-bottom: 8px;">Sección 1.0: Arquitectura de AntorOS</h3>
+          <p style="color: rgba(255, 255, 255, 0.85); line-height: 1.6; margin-bottom: 20px;">AntorOS se basa en una arquitectura limpia y desacoplada (Clean Architecture) que coordina un Backend ligero escrito en Go nativo y un Frontend reactivo de alto rendimiento implementado en Vue 3 y Pinia.</p>
+          <h3 style="color: var(--neon-cyan); text-shadow: var(--glow-cyan); margin-bottom: 8px;">Sección 2.0: Telemetría en tiempo real</h3>
+          <p style="color: rgba(255, 255, 255, 0.85); line-height: 1.6; margin-bottom: 20px;">La telemetría del sistema fluye bidireccionalmente mediante WebSockets. El daemon recopila y publica métricas de CPU y RAM del microcontrolador anfitrión y el store las sincroniza reactivamente en la interfaz.</p>
+        `;
+      }
+    });
   }
 }
 
@@ -511,36 +670,55 @@ function formatDoc(command: string) {
 }
 
 // ---- Persistencia: Guardar Archivos en Pinia ----
-function saveDocxFile() {
+function executeSaveDocx() {
   if (!docxEditorRef.value) return;
   const contentHtml = docxEditorRef.value.innerHTML;
   let filename = fileNameInput.value.trim();
+  if (!filename) filename = 'documento';
   if (!filename.endsWith('.docx')) filename += '.docx';
 
-  // Registrar en el store central virtual en la carpeta Documentos
-  osStore.addFileToFolder('Documentos', {
+  // Registrar en el store en la carpeta seleccionada por el usuario
+  osStore.addFileToFolder(selectedFolderForSave.value, {
     name: filename,
     type: 'file',
     size: `${Math.round(contentHtml.length / 1024) || 1} KB`,
-    dataUrl: contentHtml // Guardamos el HTML de formateo del docx en dataUrl!
+    dataUrl: contentHtml // Guardamos el HTML de formateo del docx en dataUrl
   });
 
-  triggerToast('¡Documento DOCX guardado con éxito!');
+  triggerToast(`¡Documento DOCX guardado con éxito en ${selectedFolderForSave.value}!`);
 }
 
-function saveXlsxFile() {
+function executeSaveXlsx() {
   const contentJson = JSON.stringify(xlsxGrid.value);
   let filename = fileNameInput.value.trim();
+  if (!filename) filename = 'planilla';
   if (!filename.endsWith('.xlsx')) filename += '.xlsx';
 
-  osStore.addFileToFolder('Documentos', {
+  osStore.addFileToFolder(selectedFolderForSave.value, {
     name: filename,
     type: 'file',
     size: '12 KB',
-    dataUrl: contentJson // Guardamos la matriz serializada del spreadsheet en dataUrl!
+    dataUrl: contentJson // Guardamos la planilla en dataUrl
   });
 
-  triggerToast('¡Planilla XLSX guardada con éxito!');
+  triggerToast(`¡Planilla XLSX guardada con éxito en ${selectedFolderForSave.value}!`);
+}
+
+function executeSavePdf() {
+  if (!pdfEditorRef.value) return;
+  const contentHtml = pdfEditorRef.value.innerHTML;
+  let filename = fileNameInput.value.trim();
+  if (!filename) filename = 'documento';
+  if (!filename.endsWith('.pdf')) filename += '.pdf';
+
+  osStore.addFileToFolder(selectedFolderForSave.value, {
+    name: filename,
+    type: 'file',
+    size: `${Math.round(contentHtml.length / 1024) || 1} KB`,
+    dataUrl: contentHtml
+  });
+
+  triggerToast(`¡Documento PDF guardado con éxito en ${selectedFolderForSave.value}!`);
 }
 
 // ---- Apertura de Archivos Existentes ----
@@ -567,6 +745,15 @@ function openExistingFile(file: { name: string; dataUrl?: string }) {
     } else {
       initEmptyGrid();
     }
+  } else if (file.name.endsWith('.pdf')) {
+    activeMode.value = 'pdf';
+    fileNameInput.value = file.name;
+    activeFileRef.value = file.name;
+    nextTick(() => {
+      if (pdfEditorRef.value) {
+        pdfEditorRef.value.innerHTML = file.dataUrl || '<p></p>';
+      }
+    });
   }
 }
 
@@ -883,6 +1070,7 @@ function triggerToast(msg: string) {
 
 .tag-docx { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
 .tag-xlsx { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.tag-pdf { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
 
 .table-empty-state {
   text-align: center;
@@ -1124,6 +1312,17 @@ function triggerToast(msg: string) {
   background: rgba(16, 185, 129, 0.25);
   border-color: #10b981;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-pdf-theme {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+.btn-pdf-theme:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }
 
 .save-icon {
@@ -1380,5 +1579,275 @@ function triggerToast(msg: string) {
 .toast-visible {
   opacity: 1;
   transform: translateX(-50%) translateY(5px);
+}
+
+/* ── DIÁLOGO GUARDAR COMO AL ESTILO GNOME FILES ── */
+.gnome-dialog-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+.gnome-dialog-card {
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.55),
+    0 0 15px rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gnome-dialog-header {
+  height: 50px;
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  user-select: none;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-icon {
+  width: 18px;
+  height: 18px;
+  color: #38bdf8;
+}
+
+.dialog-title {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.dialog-close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.dialog-close-btn:hover {
+  color: #ffffff;
+}
+
+.gnome-dialog-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Sidebar de Carpetas */
+.gnome-dialog-sidebar {
+  width: 160px;
+  background: #0f172a;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  user-select: none;
+}
+
+.sidebar-title {
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-left: 8px;
+  margin-bottom: 4px;
+}
+
+.sidebar-folder-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-folder-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.active-folder {
+  background: rgba(56, 189, 248, 0.1) !important;
+  color: #38bdf8 !important;
+}
+
+.folder-btn-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Contenido Principal (Visualización del Directorio) */
+.gnome-dialog-content {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.content-header-path {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+}
+
+.files-preview-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.file-preview-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.file-preview-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.file-preview-name {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.file-preview-size {
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.empty-preview-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+/* Pie de Página GNOME */
+.gnome-dialog-footer {
+  height: 70px;
+  background: #0f172a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.dialog-name-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-name-input-group label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dialog-filename-input {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  width: 180px;
+  outline: none;
+}
+
+.dialog-filename-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-dialog-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+.btn-dialog-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-dialog-save {
+  background: #38bdf8;
+  border: 1px solid #38bdf8;
+  border-radius: 6px;
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+.btn-dialog-save:hover {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
 }
 </style>

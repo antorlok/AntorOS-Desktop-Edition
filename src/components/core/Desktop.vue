@@ -67,6 +67,7 @@ const appRegistry: Record<string, Component> = {
   SysBenchApp: defineAsyncComponent(() => import('@/components/apps/SysBenchApp.vue')),
   TicTacToeApp: defineAsyncComponent(() => import('../apps/TicTacToeApp.vue')),
   SnakeApp: defineAsyncComponent(() => import('../apps/SnakeApp.vue')),
+  TetrisApp: defineAsyncComponent(() => import('../apps/TetrisApp.vue')),
 };
 
 /**

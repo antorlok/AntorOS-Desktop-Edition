@@ -49,7 +49,7 @@ export const useUpdateStore = defineStore('update', () => {
       downloadProgress.value += 10;
       if (downloadProgress.value >= 100) {
         clearInterval(interval);
-        
+
         // Aplicar la actualización al llegar al 100%
         if (remoteVersion.value) {
           currentVersion.value = remoteVersion.value;

@@ -61,12 +61,58 @@ interface Track {
   title: string;
   artist: string;
   duration: number; // en segundos
+  url: string;
 }
 
 const tracks: Track[] = [
-  { title: 'Cyberpunk Cityscape', artist: 'Neon Phantom', duration: 184 },
-  { title: 'Synthwave Odyssey', artist: 'antorlok Beats', duration: 215 },
-  { title: 'Retrofuturism', artist: 'Vector Glitch', duration: 162 }
+  {
+    title: 'Cyberpunk Cityscape',
+    artist: 'Neon Phantom',
+    duration: 372,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+  },
+  {
+    title: 'Synthwave Odyssey',
+    artist: 'antorlok Beats',
+    duration: 425,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'
+  },
+  {
+    title: 'Retrofuturism',
+    artist: 'Vector Glitch',
+    duration: 344,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'
+  },
+  {
+    title: 'Neon Drift',
+    artist: 'Tokyo Glitch',
+    duration: 302,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'
+  },
+  {
+    title: 'Digital Horizon',
+    artist: 'Pixelwave',
+    duration: 353,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'
+  },
+  {
+    title: 'Chiptune Sunrise',
+    artist: 'Retro Kid',
+    duration: 410,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3'
+  },
+  {
+    title: 'Virtual Paradise',
+    artist: 'Cyber-D',
+    duration: 387,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3'
+  },
+  {
+    title: 'Midnight Drive',
+    artist: 'Synthesized Soul',
+    duration: 318,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3'
+  }
 ];
 
 const trackIndex = ref(0);
@@ -78,40 +124,52 @@ const progressPct = computed(() => {
   return (currentTime.value / currentTrack.value.duration) * 100;
 });
 
-let playTimer: any = null;
+// Instancia nativa del objeto Audio para reproducción real de sonido
+const audio = new Audio();
+
+function loadTrack() {
+  audio.src = currentTrack.value.url;
+  audio.load();
+}
+
+function updateProgress() {
+  currentTime.value = Math.floor(audio.currentTime);
+}
+
+function handleEnded() {
+  nextTrack();
+}
 
 function togglePlay() {
   isPlaying.value = !isPlaying.value;
   if (isPlaying.value) {
-    playTimer = setInterval(() => {
-      if (currentTime.value >= currentTrack.value.duration) {
-        nextTrack();
-      } else {
-        currentTime.value++;
-      }
-    }, 1000);
+    audio.play().catch((err) => {
+      // Manejar bloqueo de autoplay del navegador si ocurre
+      console.warn('Reproducción de audio bloqueada por políticas del navegador:', err);
+      isPlaying.value = false;
+    });
   } else {
-    if (playTimer) {
-      clearInterval(playTimer);
-      playTimer = null;
-    }
+    audio.pause();
   }
 }
 
 function nextTrack() {
   trackIndex.value = (trackIndex.value + 1) % tracks.length;
-  resetProgress();
+  loadTrack();
+  if (isPlaying.value) {
+    audio.play().catch(() => { isPlaying.value = false; });
+  } else {
+    currentTime.value = 0;
+  }
 }
 
 function prevTrack() {
   trackIndex.value = (trackIndex.value - 1 + tracks.length) % tracks.length;
-  resetProgress();
-}
-
-function resetProgress() {
-  currentTime.value = 0;
-  if (!isPlaying.value) {
-    togglePlay();
+  loadTrack();
+  if (isPlaying.value) {
+    audio.play().catch(() => { isPlaying.value = false; });
+  } else {
+    currentTime.value = 0;
   }
 }
 
@@ -119,7 +177,9 @@ function seek(e: MouseEvent) {
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
   const clickX = e.clientX - rect.left;
   const pct = clickX / rect.width;
-  currentTime.value = Math.floor(pct * currentTrack.value.duration);
+  const newTime = Math.floor(pct * currentTrack.value.duration);
+  audio.currentTime = newTime;
+  currentTime.value = newTime;
 }
 
 function formatTime(secs: number): string {
@@ -140,8 +200,17 @@ function barStyle(index: number) {
   };
 }
 
+onMounted(() => {
+  loadTrack();
+  audio.addEventListener('timeupdate', updateProgress);
+  audio.addEventListener('ended', handleEnded);
+});
+
 onUnmounted(() => {
-  if (playTimer) clearInterval(playTimer);
+  audio.pause();
+  audio.removeEventListener('timeupdate', updateProgress);
+  audio.removeEventListener('ended', handleEnded);
+  audio.src = ''; // Detener carga en segundo plano
 });
 </script>
 
