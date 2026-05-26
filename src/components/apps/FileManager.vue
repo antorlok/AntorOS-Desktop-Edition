@@ -1378,4 +1378,30 @@ function moveSelectedItem(targetFolder: string) {
     opacity: 1;
   }
 }
+
+/* Transiciones */
+.preview-fade-enter-active,
+.preview-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.preview-fade-enter-from,
+.preview-fade-leave-to {
+  opacity: 0;
+}
+
+.preview-fade-enter-active .preview-modal-card {
+  animation: pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pop-in {
+  from {
+    transform: scale(0.95) translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
 </style>
